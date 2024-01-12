@@ -1,5 +1,7 @@
 # libut
 
+[![CMake build and test](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml)
+
     Various random files I've been saving as gists, all submoduled in one big repo.
 
 This is a collection of C++ headers (header only libraries?) for doing useful
