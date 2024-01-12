@@ -74,7 +74,7 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        ./vcpkg/${{ vcpkg-setup-file }} -disableMetrics
         ./vcpkg/vcpkg install catch2
 
     - name: Configure CMake
