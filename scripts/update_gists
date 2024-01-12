@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+import os
+import sys
+from typing import Any
+import urllib.parse
+from urllib.request import Request, urlopen
+import json
+import copy
+from pathlib import Path
+import subprocess as sp
+
+with open(Path(__file__).parent.parent / "token") as f:
+    token = f.read().strip()
+BASE_URL = "https://api.github.com"
+HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"Bearer {token}",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
+
+
+def populate_cmake_template(name: str):
+    return f"""cmake_minimum_required(VERSION 3.21)
+project(libut LANGUAGES CXX)
+
+add_library(libut_target_{name} INTERFACE)
+target_include_directories(libut_target_{name} INTERFACE ${{CMAKE_CURRENT_SOURCE_DIR}}/include)
+message(STATUS "libut: adding UT::{name}")
+add_library(UT::{name} ALIAS libut_target_{name})
+"""
+
+
+def add_params(url: str, params: dict[str, Any]) -> str:
+    url_parts = list(urllib.parse.urlparse(url))
+    query = dict(urllib.parse.parse_qsl(url_parts[4]))
+    query.update(params)
+
+    url_parts[4] = urllib.parse.urlencode(query)
+    return urllib.parse.urlunparse(url_parts)
+
+
+def make_request(endpoint: str, params: dict[str, Any] | None = None) -> Request:
+    if params is None:
+        params = {}
+    url = add_params(f"{BASE_URL}/{endpoint}", params)
+    return Request(url, headers=HEADERS, method="GET")
+
+
+def get_page(endpoint: str, params: dict[str, Any] | None = None, *, as_json=True) -> Any:
+    req = make_request(endpoint, params)
+    with urlopen(req) as response:
+        if as_json:
+            return json.load(response)
+        return response.read().decode('utf-8')
+
+
+def read_remote_file(url: str) -> str:
+    req = Request(url, headers={'User-Agent': USER_AGENT}, method="GET")
+    with urlopen(req) as response:
+        return response.read().decode('utf-8')
+
+
+def list_gists():
+    # with open("save.json", "r") as j:
+    #     return json.load(j)
+    gists = get_page("gists", {"per_page": 40}, as_json=True)
+    return gists
+
+
+def is_new_libut_gist(gist: dict[str, Any], file_list: list[str]) -> str | None:
+    if 'files' not in gist:
+        raise RuntimeError(f"Gist does not follow the schema\n{gist}")
+    files: dict[str, dict[str, Any]] = gist['files']
+    files = dict(filter(lambda file: file[1].get("language") == "C++",
+                        files.items()))
+    # no C++ files
+    if not files:
+        return None
+
+    # gist is not new
+    if all(map(lambda file: file in file_list, files.keys())):
+        return None
+
+    for name, info in files.items():
+        if not name.endswith(".hpp"):
+            continue
+        if "raw_url" not in info:
+            raise RuntimeError(f"Gist does not follow the schema\n{gist}")
+        contents = read_remote_file(info['raw_url'])
+        if contents.startswith("#ifndef UT_"):
+            return str(Path(name).with_suffix(""))
+    return None
+
+
+def tab(s: str):
+    return '\n    '.join(s.split('\n'))
+
+
+def git(*args: str) -> bool:
+    try:
+        sp.check_output(["git", *args], stderr=sp.PIPE)
+    except sp.CalledProcessError as e:
+        print(
+            f"command `{' '.join(map(str, e.args[1]))}` failed with code {e.returncode}:\n\t{tab(e.stderr.decode('utf-8'))}")
+        return False
+    return True
+
+
+def pull(path: Path):
+    print("Pulling", path.relative_to(Path(__file__).parent.parent))
+    if not git("-C", str(path), "pull"):
+        return False
+    return git("add", str(path))
+
+
+def pull_cloned_gists():
+    include = Path(__file__).parent.parent / 'include'
+    file_list = []
+
+    for d in include.iterdir():
+        repo = d / "include" / "ut" / d.name
+        if repo.is_dir():
+            if not pull(repo):
+                continue
+            for f in repo.iterdir():
+                if f.is_file() and not f.name.startswith('.'):
+                    file_list.append(f.name)
+    return file_list
+
+
+def add(url: str, name: str):
+    toplevel = Path(__file__).parent.parent
+    include = toplevel / 'include'
+    repo_config_dir = include / f"{name}" / "include" / "ut"
+    repo_config_dir.mkdir(parents=True, exist_ok=True)
+    repo_dir = repo_config_dir / name
+    print(f"Cloning {name}")
+    return git("-C", str(toplevel), "submodule", "add", url, str(repo_dir.relative_to(toplevel)))
+
+
+def write_cmake(name: str):
+    toplevel = Path(__file__).parent.parent
+    include = toplevel / 'include'
+    cmake_file = include / f"{name}" / "CMakeLists.txt"
+    if cmake_file.exists():
+        print("file", cmake_file, "already exists", file=sys.stderr)
+        return False
+    print(f"Generating CMake file for target UT::{name}")
+    with open(cmake_file, "w") as f:
+        f.write(populate_cmake_template(name))
+
+
+def main() -> int:
+    file_list = pull_cloned_gists()
+    available_gists = list_gists()
+    code = 0
+    for gist in available_gists:
+        if "html_url" not in gist:
+            raise RuntimeError(f"Gist does not follow the schema\n{gist}")
+        name = is_new_libut_gist(gist, file_list)
+        if not name:
+            continue
+        if not add(gist["html_url"], name):
+            code = 1
+            continue
+        write_cmake(name)
+    return code
+
+
+if __name__ == "__main__":
+    try:
+        exit(main())
+    except Exception as e:
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        exit(1)

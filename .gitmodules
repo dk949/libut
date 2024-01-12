@@ -1,0 +1,33 @@
+[submodule "include/smallfn/include/ut/smallfn"]
+	path = include/smallfn/include/ut/smallfn
+	url = https://gist.github.com/dk949/a9236562fcbe57006965618c435b6899
+[submodule "include/realloc_unique_ptr/include/ut/realloc_unique_ptr"]
+	path = include/realloc_unique_ptr/include/ut/realloc_unique_ptr
+	url = https://gist.github.com/dk949/8ef8270dc442e4bc4ef355244cd1b78d
+[submodule "include/sv_to_num/include/ut/sv_to_num"]
+	path = include/sv_to_num/include/ut/sv_to_num
+	url = https://gist.github.com/dk949/642fb0fbd56eeb26895ca85c9ccfcbf3
+[submodule "include/pack_loops/include/ut/pack_loops"]
+	path = include/pack_loops/include/ut/pack_loops
+	url = https://gist.github.com/dk949/90f6744785d9dbc64f4373b1ce463153
+[submodule "include/add_noexcept/include/ut/add_noexcept"]
+	path = include/add_noexcept/include/ut/add_noexcept
+	url = https://gist.github.com/dk949/eb6f2557c2c9fdcbf198f76ab3a0740c
+[submodule "include/defer/include/ut/defer"]
+	path = include/defer/include/ut/defer
+	url = https://gist.github.com/dk949/f81f5ba76459b97169abffa87dfd88e1
+[submodule "include/print/include/ut/print"]
+	path = include/print/include/ut/print
+	url = https://gist.github.com/dk949/0b1d14bec6eebdc9c3270c73d4d2ad72
+[submodule "include/demangle/include/ut/demangle"]
+	path = include/demangle/include/ut/demangle
+	url = https://gist.github.com/dk949/f30acf59c57719587ee37b280f902d52
+[submodule "include/curry/include/ut/curry"]
+	path = include/curry/include/ut/curry
+	url = https://gist.github.com/dk949/04f7d2aa602da1973044aafd285055de
+[submodule "include/check/include/ut/check"]
+	path = include/check/include/ut/check
+	url = https://gist.github.com/dk949/73e57ee7864a9675bdaff56dab8d6629
+[submodule "include/constexpr_hash/include/ut/constexpr_hash"]
+	path = include/constexpr_hash/include/ut/constexpr_hash
+	url = https://gist.github.com/dk949/61ed6669ff5d950e883fb546314b130f
