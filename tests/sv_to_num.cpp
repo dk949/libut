@@ -13,6 +13,7 @@ TEST_CASE("Integer tests", "[sv_to_num]") {
     auto const partially_incorrect = "1234%!"sv;
     auto const fully_incorrect = "..xx"sv;
     auto const empty = ""sv;
+    auto const null = std::string_view {};
 
     SECTION("full") {
         REQUIRE(svToInt(base_10_1234).has_value());
@@ -29,6 +30,7 @@ TEST_CASE("Integer tests", "[sv_to_num]") {
         REQUIRE_FALSE(svToInt(partially_incorrect).has_value());
         REQUIRE_FALSE(svToInt(fully_incorrect).has_value());
         REQUIRE_FALSE(svToInt(empty).has_value());
+        REQUIRE_FALSE(svToInt(null).has_value());
     }
     SECTION("partial") {
         REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).has_value());
@@ -39,6 +41,7 @@ TEST_CASE("Integer tests", "[sv_to_num]") {
         REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).value().second == "%!");
         REQUIRE_FALSE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(fully_incorrect).has_value());
         REQUIRE_FALSE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(empty).has_value());
+        REQUIRE_FALSE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(null).has_value());
     }
 }
 
@@ -56,6 +59,7 @@ TEST_CASE("Floating point tests", "[sv_to_num]") {
     auto const partially_incorrect = "1.2x"sv;
     auto const fully_incorrect = "--)"sv;
     auto const empty = ""sv;
+    auto const null = std::string_view {};
 
     SECTION("full") {
         REQUIRE(svToFloat(base_10_1234).has_value());
@@ -89,6 +93,7 @@ TEST_CASE("Floating point tests", "[sv_to_num]") {
         REQUIRE_FALSE(svToFloat(partially_incorrect).has_value());
         REQUIRE_FALSE(svToFloat(fully_incorrect).has_value());
         REQUIRE_FALSE(svToFloat(empty).has_value());
+        REQUIRE_FALSE(svToFloat(null).has_value());
     }
     SECTION("partial") {
         REQUIRE(svToFloat<double, SvToNumFormat::Default, SvToNumOnlyNumbers::No>(base_10_12_34).has_value());
@@ -102,5 +107,6 @@ TEST_CASE("Floating point tests", "[sv_to_num]") {
                 == "x");
         REQUIRE_FALSE(svToFloat<double, SvToNumFormat::Default, SvToNumOnlyNumbers::No>(fully_incorrect).has_value());
         REQUIRE_FALSE(svToFloat<double, SvToNumFormat::Default, SvToNumOnlyNumbers::No>(empty).has_value());
+        REQUIRE_FALSE(svToFloat<double, SvToNumFormat::Default, SvToNumOnlyNumbers::No>(null).has_value());
     }
 }
