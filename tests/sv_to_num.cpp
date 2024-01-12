@@ -18,11 +18,11 @@ TEST_CASE("Integer tests", "[sv_to_num]") {
         REQUIRE(svToInt(base_10_1234).has_value());
         REQUIRE(svToInt(base_10_1234).value() == 1234);
         REQUIRE_FALSE(svToInt<int>(base_10_8589934592).has_value());
-        REQUIRE(svToInt<long>(base_10_8589934592).has_value());
-        REQUIRE(svToInt<long>(base_10_8589934592).value() == 8'589'934'592l);
+        REQUIRE(svToInt<long long>(base_10_8589934592).has_value());
+        REQUIRE(svToInt<long long>(base_10_8589934592).value() == 8'589'934'592l);
         REQUIRE_FALSE(svToInt(base_16_234e8).has_value());
-        REQUIRE(svToInt<long, SvToNumBase(16)>(base_16_234e8).has_value());
-        REQUIRE(svToInt<long, SvToNumBase(16)>(base_16_234e8).value() == 0x234e8);
+        REQUIRE(svToInt<long long, SvToNumBase(16)>(base_16_234e8).has_value());
+        REQUIRE(svToInt<long long, SvToNumBase(16)>(base_16_234e8).value() == 0x234e8);
         REQUIRE(svToInt(base_10_negative_1234).has_value());
         REQUIRE(svToInt(base_10_negative_1234).value() == -1234);
         REQUIRE_FALSE(svToInt<unsigned>(base_10_negative_1234).has_value());
@@ -31,14 +31,14 @@ TEST_CASE("Integer tests", "[sv_to_num]") {
         REQUIRE_FALSE(svToInt(empty).has_value());
     }
     SECTION("partial") {
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).has_value());
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).value().first == 1234);
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).value().second == "");
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).has_value());
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).value().first == 1234);
-        REQUIRE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).value().second == "%!");
-        REQUIRE_FALSE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(fully_incorrect).has_value());
-        REQUIRE_FALSE(svToInt<long, SvToNumBase(10), SvToNumOnlyNumbers::No>(empty).has_value());
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).has_value());
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).value().first == 1234);
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(base_10_1234).value().second == "");
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).has_value());
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).value().first == 1234);
+        REQUIRE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(partially_incorrect).value().second == "%!");
+        REQUIRE_FALSE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(fully_incorrect).has_value());
+        REQUIRE_FALSE(svToInt<long long, SvToNumBase(10), SvToNumOnlyNumbers::No>(empty).has_value());
     }
 }
 
