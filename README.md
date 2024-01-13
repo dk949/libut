@@ -65,8 +65,12 @@ cmake --preset local
 cmake --build build
 ./build/tests/libut_tests
 # or
-ctest --test-dir build/tests
+ctest --output-on-failure --test-dir build/tests
 ```
+
+_NOTE:_ you can use the `local` preset to build with
+[ninja](https://ninja-build.org/), or `default` to build with the default
+generator (e.g. "Unix Makefiles" on linux)
 
 ## License
 
