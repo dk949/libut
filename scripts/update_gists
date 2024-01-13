@@ -11,8 +11,13 @@ import subprocess as sp
 
 REPO_BASE = Path(__file__).parent.parent
 INCLUDE = REPO_BASE / 'include'
+TOKEN_LOC = REPO_BASE / "token"
 
-with open(REPO_BASE / "token") as f:
+if not TOKEN_LOC.exists():
+    print(f"Token not found in {TOKEN_LOC}")
+    exit(1)
+
+with open(TOKEN_LOC) as f:
     token = f.read().strip()
 BASE_URL = "https://api.github.com"
 HEADERS = {
