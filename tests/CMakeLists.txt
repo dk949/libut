@@ -7,7 +7,7 @@ set_target_warnings(libut_tests)
 
 find_package(Catch2 3 REQUIRED)
 target_link_libraries(libut_tests PRIVATE Catch2::Catch2WithMain)
-target_include_directories(libut_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_precompile_headers(libut_tests PRIVATE <catch.hpp>)
 
 include(CTest)
 include(Catch)
