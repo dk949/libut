@@ -61,7 +61,7 @@ Test can be ran using Catch2
 git clone https://github.com/Microsoft/vcpkg.git
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ./vcpkg/vcpkg install catch2
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --preset local
 cmake --build build
 ./build/tests/libut_tests
 # or
