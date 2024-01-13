@@ -35,6 +35,8 @@ target_link_libraries(MY_TARGET UT::target_name)
 
 ### Currently available targets
 
+<!-- AUTOGEN_BEGIN -->
+
 * `UT::check`
 * `UT::add_noexcept`
 * `UT::smallfn`
@@ -46,6 +48,8 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::curry`
 * `UT::defer`
 * `UT::print`
+
+<!-- AUTOGEN_END -->
 
 A special target `UT::all` is also available, combining all of the above.
 
