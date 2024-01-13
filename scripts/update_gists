@@ -9,7 +9,10 @@ import copy
 from pathlib import Path
 import subprocess as sp
 
-with open(Path(__file__).parent.parent / "token") as f:
+REPO_BASE = Path(__file__).parent.parent
+INCLUDE = REPO_BASE / 'include'
+
+with open(REPO_BASE / "token") as f:
     token = f.read().strip()
 BASE_URL = "https://api.github.com"
 HEADERS = {
@@ -109,17 +112,16 @@ def git(*args: str) -> bool:
 
 
 def pull(path: Path):
-    print("Pulling", path.relative_to(Path(__file__).parent.parent))
+    print("Pulling", path.relative_to(REPO_BASE))
     if not git("-C", str(path), "pull"):
         return False
     return git("add", str(path))
 
 
 def pull_cloned_gists():
-    include = Path(__file__).parent.parent / 'include'
     file_list = []
 
-    for d in include.iterdir():
+    for d in INCLUDE.iterdir():
         repo = d / "include" / "ut" / d.name
         if repo.is_dir():
             if not pull(repo):
@@ -131,19 +133,15 @@ def pull_cloned_gists():
 
 
 def add(url: str, name: str):
-    toplevel = Path(__file__).parent.parent
-    include = toplevel / 'include'
-    repo_config_dir = include / f"{name}" / "include" / "ut"
+    repo_config_dir = INCLUDE / f"{name}" / "include" / "ut"
     repo_config_dir.mkdir(parents=True, exist_ok=True)
     repo_dir = repo_config_dir / name
     print(f"Cloning {name}")
-    return git("-C", str(toplevel), "submodule", "add", url, str(repo_dir.relative_to(toplevel)))
+    return git("-C", str(REPO_BASE), "submodule", "add", url, str(repo_dir.relative_to(REPO_BASE)))
 
 
 def write_cmake(name: str):
-    toplevel = Path(__file__).parent.parent
-    include = toplevel / 'include'
-    cmake_file = include / f"{name}" / "CMakeLists.txt"
+    cmake_file = INCLUDE / f"{name}" / "CMakeLists.txt"
     if cmake_file.exists():
         print("file", cmake_file, "already exists", file=sys.stderr)
         return False

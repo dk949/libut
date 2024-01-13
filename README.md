@@ -30,12 +30,24 @@ FetchContent_MakeAvailable(libut)
 
 # assuming MY_TARGET is a valid target (executable or library)
 
-target_link_libraries(MY_TARGET UT::name_of_sub_project)
+target_link_libraries(MY_TARGET UT::target_name)
 ```
 
-### Currently available sub projects
+### Currently available targets
 
+* `UT::check`
+* `UT::add_noexcept`
+* `UT::smallfn`
+* `UT::sv_to_num`
+* `UT::realloc_unique_ptr`
+* `UT::demangle`
+* `UT::constexpr_hash`
+* `UT::pack_loops`
+* `UT::curry`
+* `UT::defer`
+* `UT::print`
 
+A special target `UT::all` is also available, combining all of the above.
 
 ## Testing
 
