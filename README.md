@@ -12,6 +12,31 @@ All files are in individual directories under `include`.
 
 Documentation can be found at the top of each file.
 
+## Getting `libut`
+
+The easiest way to include `libut` in your `CMake` project is with
+`fetch_content`.
+
+Simply add the following to your `CMakeLists.txt`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  libut
+  GIT_REPOSITORY https://github.com/dk949/libut/
+  GIT_TAG trunk # alternatively you can use a hash to pin exact venison to use
+)
+FetchContent_MakeAvailable(libut)
+
+# assuming MY_TARGET is a valid target (executable or library)
+
+target_link_libraries(MY_TARGET UT::name_of_sub_project)
+```
+
+### Currently available sub projects
+
+
+
 ## Testing
 
 Test can be ran using Catch2
