@@ -18,6 +18,15 @@
         "BUILD_TESTING": true,
         "ENABLE_CACHE": true
       }
+    },
+    {
+      "name": "default",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "BUILD_TESTING": true,
+        "ENABLE_CACHE": true
+      }
     }
   ]
 }
