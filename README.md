@@ -39,7 +39,6 @@ target_link_libraries(MY_TARGET UT::target_name)
 
 * `UT::check`
 * `UT::add_noexcept`
-* `UT::smallfn`
 * `UT::sv_to_num`
 * `UT::realloc_unique_ptr`
 * `UT::demangle`
