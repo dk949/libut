@@ -5,8 +5,7 @@
       "name": "ci",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "BUILD_TESTING": true,
-        "ENABLE_CACHE": true
+        "BUILD_TESTING": true
       }
     },
     {

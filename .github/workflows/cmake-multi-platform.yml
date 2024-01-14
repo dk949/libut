@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ trunk ]
 
-env:
-  CCACHE_DIR: ${{ github.workspace }}/ccache_dir
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -53,13 +50,6 @@ jobs:
         elif [ "$RUNNER_OS" = "Windows" ]; then
           echo "vcpkg-setup-file=bootstrap-vcpkg.bat" >> "$GITHUB_OUTPUT"
         fi
-
-    - name: Cache ccache
-      id: cache-ccache
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.CCACHE_DIR }}
-        key: ${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-ccache
 
     - name: Cache vcpkg
       id: cache-vcpkg
