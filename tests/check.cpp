@@ -1,8 +1,8 @@
 #include <catch.hpp>
 #include <ut/check/check.hpp>
 
+#include <algorithm>
 #include <iostream>
-#include <ranges>
 #include <sstream>
 #include <string_view>
 #include <vector>
@@ -142,10 +142,20 @@ TEST_CASE("Check functionality", "[check]") {
     std::cout.rdbuf(cout_buf);
 
     std::vector<std::string_view> vec;
-    for (auto const line : std::views::split(res, '\n'))
-        vec.emplace_back(line.begin(), line.end());
+    // no ranges in the CI build
+    // TODO: use std::views::split when available
+    {
+        auto curr = res.begin();
+        while (curr != res.end()) {
+            auto next = std::find(curr, res.end(), '\n');
+            vec.emplace_back(&*curr, std::distance(curr, next));
+            curr = ++next;
+        }
+    }
 
-    REQUIRE(vec.size() == 9);
+
+
+    REQUIRE(vec.size() == 8);
     // Using starts_with (instead of ==) because Check uses typeid name to identify objects
     REQUIRE(vec.at(0).starts_with("Check();"));
     REQUIRE(vec.at(1).starts_with("Check(const Check &);"));
@@ -155,5 +165,4 @@ TEST_CASE("Check functionality", "[check]") {
     REQUIRE(vec.at(5).starts_with("~Check();"));
     REQUIRE(vec.at(6).starts_with("~Check();"));
     REQUIRE(vec.at(7).starts_with("~Check();"));
-    REQUIRE(vec.at(8) == "");
 }
