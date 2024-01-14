@@ -1,6 +1,3 @@
-[submodule "include/smallfn/include/ut/smallfn"]
-	path = include/smallfn/include/ut/smallfn
-	url = https://gist.github.com/dk949/a9236562fcbe57006965618c435b6899
 [submodule "include/realloc_unique_ptr/include/ut/realloc_unique_ptr"]
 	path = include/realloc_unique_ptr/include/ut/realloc_unique_ptr
 	url = https://gist.github.com/dk949/8ef8270dc442e4bc4ef355244cd1b78d
