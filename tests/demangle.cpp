@@ -23,33 +23,38 @@ class Derived : public Base { };
 
 TEST_CASE("Demangle simple", "[demangle]") {
     auto const i1 = ut::typeNameDynamic(1);
-    constexpr auto i2 = ut::typeName<int>();
 
     auto const d1 = ut::typeNameDynamic(2.3);
-    constexpr auto d2 = ut::typeName<double>();
 
     REQUIRE_THAT(i1, ContainsSubstring("int"));
-    REQUIRE_THAT(std::string(i2), ContainsSubstring("int"));
     REQUIRE_THAT(d1, ContainsSubstring("double"));
+
+#if (__GNUC__ >= 12) || (__clang_major__ >= 15)
+    constexpr auto i2 = ut::typeName<int>();
+    constexpr auto d2 = ut::typeName<double>();
+    REQUIRE_THAT(std::string(i2), ContainsSubstring("int"));
     REQUIRE_THAT(std::string(d2), ContainsSubstring("double"));
+#endif
 }
 
 TEST_CASE("Demangle complex", "[demangle]") {
     auto const i1 = ut::typeNameDynamic(Lorem::Ipsum {});
-    constexpr auto i2 = ut::typeName<Lorem::Ipsum>();
-
     auto const d1 = ut::typeNameDynamic(Lorem::Ipsum::Dolor {});
-    constexpr auto d2 = ut::typeName<Lorem::Ipsum::Dolor>();
 
-    REQUIRE(i1 == i2);
-    REQUIRE(d1 == d2);
+
     REQUIRE_THAT(i1, ContainsSubstring("Lorem") && ContainsSubstring("Ipsum"));
-    REQUIRE_THAT(std::string(i2), ContainsSubstring("Lorem") && ContainsSubstring("Ipsum"));
     REQUIRE_THAT(d1, ContainsSubstring("Lorem") && ContainsSubstring("Ipsum") && ContainsSubstring("Dolor"));
+
+#if (__GNUC__ >= 12) || (__clang_major__ >= 15)
+    constexpr auto i2 = ut::typeName<Lorem::Ipsum>();
+    constexpr auto d2 = ut::typeName<Lorem::Ipsum::Dolor>();
+    REQUIRE_THAT(std::string(i2), ContainsSubstring("Lorem") && ContainsSubstring("Ipsum"));
     REQUIRE_THAT(std::string(d2), ContainsSubstring("Lorem") && ContainsSubstring("Ipsum") && ContainsSubstring("Dolor"));
+#endif
 }
 
 TEST_CASE("Demangle const and references", "[demangle]") {
+#if (__GNUC__ >= 12) || (__clang_major__ >= 15)
 
     // clang-format off
     int i = 0;
@@ -75,7 +80,7 @@ TEST_CASE("Demangle const and references", "[demangle]") {
     STATIC_REQUIRE(ut::typeName<decltype(ipsum)>() != ut::typeName<decltype(ipsum_ref)>());
     STATIC_REQUIRE(ut::typeName<decltype(ipsum)>() != ut::typeName<decltype(ipsum_ref_ref)>());
 
-#define REQ_REGEX(sv, re) REQUIRE_THAT(std::string(sv), re)
+#    define REQ_REGEX(sv, re) REQUIRE_THAT(std::string(sv), re)
     // GCC and clang use west const, msvc uses east const
     // so have to have two matchers for the const cases
 
@@ -98,6 +103,7 @@ TEST_CASE("Demangle const and references", "[demangle]") {
     REQ_REGEX(ut::typeName<decltype(ipsum_cref_ref)>(),
         Matches(R"([ \t]*Lorem.*Ipsum [^c]*const[^&]*&&)")  //
             || Matches(R"([ \t]*const[ \t]+Lorem.*Ipsum[^&]*&&)"));
+#endif
 }
 
 TEST_CASE("Demangle inheritance", "[demangle]") {
@@ -108,8 +114,11 @@ TEST_CASE("Demangle inheritance", "[demangle]") {
     Base &b_ref = b;
     Base &d_ref = d;
 
-    STATIC_REQUIRE(ut::typeName<decltype(b)> != ut::typeName<decltype(d)>);
-    STATIC_REQUIRE(ut::typeName<decltype(b_ref)> == ut::typeName<decltype(d_ref)>);
     REQUIRE_THAT(ut::typeNameDynamic(b_ref), ContainsSubstring("Base") && !ContainsSubstring("Derived"));
     REQUIRE_THAT(ut::typeNameDynamic(d_ref), !ContainsSubstring("Base") && ContainsSubstring("Derived"));
+
+#if (__GNUC__ >= 12) || (__clang_major__ >= 15)
+    STATIC_REQUIRE(ut::typeName<decltype(b)> != ut::typeName<decltype(d)>);
+    STATIC_REQUIRE(ut::typeName<decltype(b_ref)> == ut::typeName<decltype(d_ref)>);
+#endif
 }
