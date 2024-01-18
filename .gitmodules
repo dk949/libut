@@ -25,3 +25,6 @@
 [submodule "include/constexpr_hash/include/ut/constexpr_hash"]
 	path = include/constexpr_hash/include/ut/constexpr_hash
 	url = https://gist.github.com/dk949/61ed6669ff5d950e883fb546314b130f
+[submodule "include/demangle/include/ut/demangle"]
+	path = include/demangle/include/ut/demangle
+	url = https://gist.github.com/dk949/f30acf59c57719587ee37b280f902d52
