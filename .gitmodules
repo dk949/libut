@@ -16,9 +16,6 @@
 [submodule "include/print/include/ut/print"]
 	path = include/print/include/ut/print
 	url = https://gist.github.com/dk949/0b1d14bec6eebdc9c3270c73d4d2ad72
-[submodule "include/demangle/include/ut/demangle"]
-	path = include/demangle/include/ut/demangle
-	url = https://gist.github.com/dk949/f30acf59c57719587ee37b280f902d52
 [submodule "include/curry/include/ut/curry"]
 	path = include/curry/include/ut/curry
 	url = https://gist.github.com/dk949/04f7d2aa602da1973044aafd285055de
