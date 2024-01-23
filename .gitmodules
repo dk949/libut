@@ -28,3 +28,6 @@
 [submodule "include/demangle/include/ut/demangle"]
 	path = include/demangle/include/ut/demangle
 	url = https://gist.github.com/dk949/f30acf59c57719587ee37b280f902d52
+[submodule "include/pair/include/ut/pair"]
+	path = include/pair/include/ut/pair
+	url = https://gist.github.com/dk949/489f93c99e7308b7b3a97755b3125c70

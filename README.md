@@ -38,6 +38,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 <!-- AUTOGEN_BEGIN -->
 
 * `UT::check`
+* `UT::pair`
 * `UT::add_noexcept`
 * `UT::sv_to_num`
 * `UT::realloc_unique_ptr`
