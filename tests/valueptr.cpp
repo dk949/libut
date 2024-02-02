@@ -11,6 +11,13 @@
 #define assert REQUIRE
 #include <ut/ptr_containers/valueptr.hpp>
 
+// ValuePtr is deprecated until it gets fixed, but I wanted to keep the tests around
+#ifdef __GNUC__
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#else
+#    pragma warning(disable: 4996)
+#endif
+
 using namespace ut;
 
 TEST_CASE("ValuePtr: constructors", "[utils][ValuePtr]") {

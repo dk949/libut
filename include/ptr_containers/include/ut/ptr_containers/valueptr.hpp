@@ -8,7 +8,7 @@
 namespace ut {
 
 template<typename T>
-class ValuePtr {
+class [[deprecated("This class has broken semantics when used with polymorphic types")]] ValuePtr {
     template<typename U>
     friend class ValuePtr;
 
