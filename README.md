@@ -37,6 +37,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 
 <!-- AUTOGEN_BEGIN -->
 
+* `UT::ptr_containers`
 * `UT::check`
 * `UT::pair`
 * `UT::add_noexcept`
