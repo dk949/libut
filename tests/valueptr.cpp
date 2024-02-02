@@ -5,18 +5,21 @@
 #include <limits>
 #include <memory>
 
+// ValuePtr is deprecated until it gets fixed, but I wanted to keep the tests around
+#ifdef __GNUC__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#else
+#    pragma warning(push)
+#    pragma warning(disable: 4996)
+#endif
+
 #ifdef assert
 #    undef assert
 #endif
 #define assert REQUIRE
 #include <ut/ptr_containers/valueptr.hpp>
 
-// ValuePtr is deprecated until it gets fixed, but I wanted to keep the tests around
-#ifdef __GNUC__
-#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#else
-#    pragma warning(disable: 4996)
-#endif
 
 using namespace ut;
 
@@ -312,3 +315,9 @@ TEST_CASE("ValuePtr: inheritance", "[utils][ValuePtr]") {
         REQUIRE(v->isBase());
     }
 }
+
+#ifdef __GNUC__
+#    pragma GCC diagnostic pop
+#else
+#    pragma warning(pop)
+#endif
