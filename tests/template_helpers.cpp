@@ -11,7 +11,7 @@ class CDerived : private Base { };
 
 struct Unrelated { };
 
-TEST_CASE("template_helpers: SameAsRemoveCVRef", "[utils][concepts]") {
+TEST_CASE("SameAsRemoveCVRef", "[concepts][template_helpers]") {
     STATIC_REQUIRE(SameAsRemoveCVRef<int, int>);
     STATIC_REQUIRE(SameAsRemoveCVRef<int, int &>);
     STATIC_REQUIRE(SameAsRemoveCVRef<int &, int>);
@@ -53,7 +53,7 @@ TEST_CASE("template_helpers: SameAsRemoveCVRef", "[utils][concepts]") {
     STATIC_REQUIRE(!SameAsRemoveCVRef<double const &, int const &>);
 }
 
-TEST_CASE("template_helpers: DerivedOrEqualTo", "[utils][concepts]") {
+TEST_CASE("DerivedOrEqualTo", "[concepts][template_helpers]") {
 
     STATIC_REQUIRE(DerivedOrEqualTo<int, int>);
     STATIC_REQUIRE(DerivedOrEqualTo<int, int &>);
@@ -180,7 +180,7 @@ TEST_CASE("template_helpers: DerivedOrEqualTo", "[utils][concepts]") {
     STATIC_REQUIRE(!DerivedOrEqualTo<Unrelated const &, Base const &>);
 }
 
-TEST_CASE("template_helpers: AddTransitiveConst", "[utils][concepts]") {
+TEST_CASE("AddTransitiveConst", "[concepts][template_helpers]") {
     using Type = int;
     using TypeConst = int const;
 

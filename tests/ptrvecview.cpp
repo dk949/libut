@@ -15,7 +15,7 @@
 
 using namespace ut;
 
-TEST_CASE("PtrVecView: constructors", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView constructors", "[ptrvecview]") {
     auto v = OwnPtrVec<int>::make(1, 2, 3, 4);
 
     SECTION("Empty constructor") {
@@ -99,7 +99,7 @@ TEST_CASE("PtrVecView: constructors", "[utils][PtrVecView]") {
     }
 }
 
-TEST_CASE("PtrVecView: element access", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView element access", "[ptrvecview]") {
     auto v = OwnPtrVec<int>::make(1, 2);
     auto view = v.view();
     REQUIRE(view.size() == 2);
@@ -125,7 +125,7 @@ TEST_CASE("PtrVecView: element access", "[utils][PtrVecView]") {
     }
 }
 
-TEST_CASE("PtrVecView: iterators", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView iterators", "[ptrvecview]") {
     auto v = OwnPtrVec<int>::make(1, 2, 3, 4, 5);
     auto view = v.view();
     PtrVecView<int> empty;
@@ -181,7 +181,7 @@ TEST_CASE("PtrVecView: iterators", "[utils][PtrVecView]") {
     }
 }
 
-TEST_CASE("PtrVecView: capacity", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView capacity", "[ptrvecview]") {
     auto v = OwnPtrVec<int>::make(1, 2, 3, 4);
     PtrVecView<int> empty;
     auto view = v.view();
@@ -202,7 +202,7 @@ TEST_CASE("PtrVecView: capacity", "[utils][PtrVecView]") {
     }
 }
 
-TEST_CASE("PtrVecView: comparison", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView comparison", "[ptrvecview]") {
     auto same1 = OwnPtrVec<int>::make(1, 2, 3, 4);
     auto same2 = OwnPtrVec<int>::make(1, 2, 3, 4);
     auto diff1 = OwnPtrVec<int>::make(100, 200, 300, 400);
@@ -272,7 +272,7 @@ TEST_CASE("PtrVecView: comparison", "[utils][PtrVecView]") {
     }
 }
 
-TEST_CASE("PtrVecView: stdlib integration", "[utils][PtrVecView]") {
+TEST_CASE("PtrVecView stdlib integration", "[ptrvecview]") {
     auto v = OwnPtrVec<int>::make(1);
     auto view = v.view();
 

@@ -23,7 +23,7 @@
 
 using namespace ut;
 
-TEST_CASE("ValuePtr: constructors", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr constructors", "[valueptr]") {
 
     SECTION("default constructor") {
         ValuePtr<int> v;
@@ -60,14 +60,14 @@ TEST_CASE("ValuePtr: constructors", "[utils][ValuePtr]") {
     }
 }
 
-TEST_CASE("ValuePtr: release", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr release", "[valueptr]") {
     auto v = ValuePtr {27};
     auto ptr = v.release();
     REQUIRE(*ptr == 27);
     SUCCEED("no leak and no double delete");
 }
 
-TEST_CASE("ValuePtr: assignment", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr assignment", "[valueptr]") {
     SECTION("Copy assignment") {
         ValuePtr<int> v1 = 10;
         ValuePtr<int> v2 = 12;
@@ -83,7 +83,7 @@ TEST_CASE("ValuePtr: assignment", "[utils][ValuePtr]") {
     }
 }
 
-TEST_CASE("ValuePtr: comparison", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr comparison", "[valueptr]") {
     auto i_same1 = 1;
     auto i_same2 = 1;
     auto i_diff1 = 100;
@@ -131,7 +131,7 @@ TEST_CASE("ValuePtr: comparison", "[utils][ValuePtr]") {
     REQUIRE_FALSE(i_same1 == diff2);
 }
 
-TEST_CASE("ValuePtr: call operator", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr call operator", "[valueptr]") {
     SECTION("function pointer") {
         using Fn = int(int);
         Fn *fp = [](int i) {
@@ -172,7 +172,7 @@ TEST_CASE("ValuePtr: call operator", "[utils][ValuePtr]") {
     }
 }
 
-TEST_CASE("ValuePtr: stdlib integration", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr stdlib integration", "[valueptr]") {
     ValuePtr<int> v;
 
     SECTION("swap") {
@@ -199,7 +199,7 @@ TEST_CASE("ValuePtr: stdlib integration", "[utils][ValuePtr]") {
     }
 }
 
-TEST_CASE("ValuePtr: inheritance", "[utils][ValuePtr]") {
+TEST_CASE("ValuePtr inheritance", "[valueptr]") {
     struct Base {
         Base() = default;
 

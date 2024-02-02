@@ -13,7 +13,7 @@
 
 using namespace ut;
 
-TEST_CASE("OwnPtrVec: constructors", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec constructors", "[ownptrvec]") {
 
     SECTION("Empty constructor") {
         OwnPtrVec<int> v;
@@ -51,7 +51,7 @@ TEST_CASE("OwnPtrVec: constructors", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: element access", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec element access", "[ownptrvec]") {
     auto v = OwnPtrVec<int>::make(23, 42);
     REQUIRE(v.size() == 2);
     OwnPtrVec<int> const &cv = v;
@@ -115,7 +115,7 @@ TEST_CASE("OwnPtrVec: element access", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: iterators", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec iterators", "[ownptrvec]") {
     OwnPtrVec<int> empty;
     OwnPtrVec<int> const cempty;
     auto v = OwnPtrVec<int>::make(1, 2, 3, 4, 5);
@@ -209,7 +209,7 @@ TEST_CASE("OwnPtrVec: iterators", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: capacity", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec capacity", "[ownptrvec]") {
     OwnPtrVec<int> empty;
     auto reserved = OwnPtrVec<int>::fromReserve(10);
     auto v = OwnPtrVec<int>::make(1, 2, 3, 4);
@@ -255,7 +255,7 @@ TEST_CASE("OwnPtrVec: capacity", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: modifiers", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec modifiers", "[ownptrvec]") {
     struct S {
         S(int, int, int) { }
     };
@@ -370,7 +370,7 @@ TEST_CASE("OwnPtrVec: modifiers", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: comparison", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec comparison", "[ownptrvec]") {
     auto same1 = OwnPtrVec<int>::make(1, 2, 3, 4);
     auto same2 = OwnPtrVec<int>::make(1, 2, 3, 4);
     auto diff1 = OwnPtrVec<int>::make(100, 200, 300, 400);
@@ -395,7 +395,7 @@ TEST_CASE("OwnPtrVec: comparison", "[utils][OwnPtrVec]") {
     REQUIRE_FALSE(same1 == empty1);
 }
 
-TEST_CASE("OwnPtrVec: stdlib integration", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec stdlib integration", "[ownptrvec]") {
     OwnPtrVec<int> v;
     v.push_back(1);
 
@@ -471,7 +471,7 @@ TEST_CASE("OwnPtrVec: stdlib integration", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: overloaded constructors", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec overloaded constructors", "[ownptrvec]") {
     SECTION("No copy") {
         struct NoCpy {
             NoCpy() = default;
@@ -526,7 +526,7 @@ TEST_CASE("OwnPtrVec: overloaded constructors", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: inheritance", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec inheritance", "[ownptrvec]") {
     struct Base {
         Base() = default;
 
@@ -563,7 +563,7 @@ TEST_CASE("OwnPtrVec: inheritance", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: incomplete type", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec incomplete type", "[ownptrvec]") {
     SECTION("definition available in same translation unit") {
         // Allocating on the heap to control lifetime
         auto *v = new OwnPtrVec<struct S>();
@@ -588,7 +588,7 @@ TEST_CASE("OwnPtrVec: incomplete type", "[utils][OwnPtrVec]") {
     }
 }
 
-TEST_CASE("OwnPtrVec: static assertions", "[utils][OwnPtrVec]") {
+TEST_CASE("OwnPtrVec static assertions", "[ownptrvec]") {
 
     SECTION("IsDerivedFromContainerBaseV") {
         STATIC_REQUIRE(IsDerivedFromContainerBaseV<OwnPtrVec<int>>);
