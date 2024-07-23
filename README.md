@@ -43,8 +43,10 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::add_noexcept`
 * `UT::sv_to_num`
 * `UT::realloc_unique_ptr`
+* `UT::assert`
 * `UT::demangle`
 * `UT::constexpr_hash`
+* `UT::trim`
 * `UT::pack_loops`
 * `UT::curry`
 * `UT::defer`

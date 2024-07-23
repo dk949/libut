@@ -31,3 +31,9 @@
 [submodule "include/pair/include/ut/pair"]
 	path = include/pair/include/ut/pair
 	url = https://gist.github.com/dk949/489f93c99e7308b7b3a97755b3125c70
+[submodule "include/assert/include/ut/assert"]
+	path = include/assert/include/ut/assert
+	url = https://gist.github.com/dk949/9a44ff7eb4c353abba332567addc078e
+[submodule "include/trim/include/ut/trim"]
+	path = include/trim/include/ut/trim
+	url = https://gist.github.com/dk949/78dd944ea2b9763eb61cc5a652c35900
