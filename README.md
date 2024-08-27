@@ -21,6 +21,8 @@ Simply add the following to your `CMakeLists.txt`:
 
 ```cmake
 include(FetchContent)
+# Set the directory to download dependencies to. Avoids putting them in $buildDir 
+set(FETCHCONTENT_BASE_DIR "${PROJECT_SOURCE_DIR}/_deps")
 FetchContent_Declare(
   libut
   GIT_REPOSITORY https://github.com/dk949/libut/
