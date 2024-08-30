@@ -17,7 +17,7 @@ public:
             , m_destructor(std::forward<Dd>(destructor)) { }
 
     template<typename Dd>
-    Resource(Dd &&destructor) noexcept(std::is_nothrow_constructible_v<D, Dd &&>)
+    explicit Resource(Dd &&destructor) noexcept(std::is_nothrow_constructible_v<D, Dd &&>)
             : m_destructor(std::forward<Dd>(destructor)) { }
 
     Resource(Resource const &) = delete;
