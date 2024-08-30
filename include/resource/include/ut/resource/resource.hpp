@@ -10,13 +10,15 @@ class Resource {
     D m_destructor;
 
 public:
-    Resource(T &&data, D &&destructor) noexcept(std::is_nothrow_constructible_v<T, T &&>  //
-                                                && std::is_nothrow_constructible_v<D, D &&>)
-            : m_data(std::forward<T>(data))
-            , m_destructor(std::forward<D>(destructor)) { }
+    template<typename Tt, typename Dd>
+    Resource(Tt &&data, Dd &&destructor) noexcept(std::is_nothrow_constructible_v<T, Tt &&>  //
+                                                  && std::is_nothrow_constructible_v<D, Dd &&>)
+            : m_data(std::forward<Tt>(data))
+            , m_destructor(std::forward<Dd>(destructor)) { }
 
-    Resource(D &&destructor) noexcept(std::is_nothrow_constructible_v<D, D &&>)
-            : m_destructor(std::forward<D>(destructor)) { }
+    template<typename Dd>
+    Resource(Dd &&destructor) noexcept(std::is_nothrow_constructible_v<D, Dd &&>)
+            : m_destructor(std::forward<Dd>(destructor)) { }
 
     Resource(Resource const &) = delete;
     Resource &operator=(Resource const &) = delete;
@@ -54,6 +56,40 @@ public:
         return tryGetNonNullValue<T>(m_data);
     }
 };
+
+namespace detail {
+    template<typename T>
+    concept Object = std::is_object_v<T>;
+
+    template<typename F, typename Ret, typename A, typename... Rest>
+    A deduceMemFn(Ret (F::*)(A, Rest...));
+
+    template<typename F, typename Ret, typename A, typename... Rest>
+    A deduceMemFn(Ret (F::*)(A, Rest...) const);
+
+    template<typename F>
+    struct GetArg;
+
+    template<typename R, typename A>
+    struct GetArg<R(A)> {
+        using Arg = A;
+    };
+
+    template<Object O>
+    struct GetArg<O> {
+        using Arg = decltype(deduceMemFn(&O::operator()));
+    };
+
+}  // namespace detail
+
+template<typename Tt, typename Dd>
+Resource(Tt &&data, Dd &&destructor) -> Resource<std::decay_t<Tt>, std::decay_t<Dd>>;
+
+
+template<typename Dd>
+Resource(Dd &&destructor)
+    -> Resource<std::decay_t<typename ut::detail::GetArg<std::remove_pointer_t<std::decay_t<Dd>>>::Arg>, std::decay_t<Dd>>;
+
 }  // namespace ut
 
 #endif  // UT_RESOURCE_HPP
