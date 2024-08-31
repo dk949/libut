@@ -9,6 +9,11 @@ find_package(Catch2 3 REQUIRED)
 target_link_libraries(libut_tests PRIVATE Catch2::Catch2WithMain)
 target_precompile_headers(libut_tests PRIVATE <catch.hpp>)
 
+if(NOT MSVC)
+    target_compile_options(libut_tests PUBLIC "-fsanitize=address" "-Og" "-g")
+    target_link_options(libut_tests PUBLIC "-fsanitize=address" "-lg")
+endif()
+
 include(CTest)
 include(Catch)
 catch_discover_tests(libut_tests)
