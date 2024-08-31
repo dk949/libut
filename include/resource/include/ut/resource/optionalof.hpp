@@ -46,15 +46,6 @@ T &getNonNullValue(OptionalOf<T> &data) noexcept {
 }
 
 template<typename T>
-[[nodiscard]]
-T &tryGetNonNullValue(OptionalOf<T> &data) noexcept(false) {
-    if constexpr (std::is_pointer_v<T>)
-        return data;
-    else
-        return data.value();
-}
-
-template<typename T>
 PointerOf<T> operatorArrow(OptionalOf<T> &data) noexcept {
     if constexpr (std::is_pointer_v<T>)
         return data;

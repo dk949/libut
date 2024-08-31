@@ -63,13 +63,13 @@ public:
     }
 
     [[nodiscard]]
-    T &get() noexcept(false) {
-        return tryGetNonNullValue<T>(m_data);
+    T &get() noexcept {
+        return getNonNullValue<T>(m_data);
     }
 
     [[nodiscard]]
-    T const &get() const noexcept(false) {
-        return tryGetNonNullValue<T>(m_data);
+    T const &get() const noexcept {
+        return getNonNullValue<T>(m_data);
     }
 
     [[nodiscard]]
