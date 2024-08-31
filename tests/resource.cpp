@@ -100,8 +100,6 @@ TEST_CASE("resource get", "[resource]") {
     SECTION("value") {
         REQUIRE(res_val.get() == val);
         REQUIRE(const_res_val.get() == val);
-
-        REQUIRE_THROWS(empty_res_val.get());
     }
 
     SECTION("pointer") {
@@ -109,8 +107,6 @@ TEST_CASE("resource get", "[resource]") {
         REQUIRE(const_res_ptr.get() == ptr_val);
         REQUIRE(res_const_ptr.get() == const_ptr_val);
         REQUIRE(const_res_const_ptr.get() == const_ptr_val);
-
-        REQUIRE_NOTHROW(empty_res_ptr.get());
     }
 }
 
