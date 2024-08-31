@@ -69,10 +69,7 @@ public:
 
     [[nodiscard]]
     T const &get() const noexcept(false) {
-        if constexpr (needs_internal_mutability)
-            return tryGetNonNullValue<T>(m_data);
-        else
-            return tryGetConstNonNullValue<T>(m_data);
+        return tryGetNonNullValue<T>(m_data);
     }
 
     [[nodiscard]]
@@ -82,10 +79,7 @@ public:
 
     [[nodiscard]]
     std::conditional_t<needs_internal_mutability, PointerOf<T>, ConstPointerOf<T>> operator->() const noexcept {
-        if constexpr (needs_internal_mutability)
-            return operatorArrow<T>(m_data);
-        else
-            return constOperatorArrow<T>(m_data);
+        return operatorArrow<T>(m_data);
     }
 };
 

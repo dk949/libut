@@ -55,15 +55,6 @@ T &tryGetNonNullValue(OptionalOf<T> &data) noexcept(false) {
 }
 
 template<typename T>
-[[nodiscard]]
-T const &tryGetConstNonNullValue(ConstOptionalOf<T> const &data) noexcept(false) {
-    if constexpr (std::is_pointer_v<T>)
-        return data;
-    else
-        return data.value();
-}
-
-template<typename T>
 PointerOf<T> operatorArrow(OptionalOf<T> &data) noexcept {
     if constexpr (std::is_pointer_v<T>)
         return data;
@@ -71,13 +62,6 @@ PointerOf<T> operatorArrow(OptionalOf<T> &data) noexcept {
         return data.operator->();
 }
 
-template<typename T>
-ConstPointerOf<T> constOperatorArrow(ConstOptionalOf<T> const &data) noexcept {
-    if constexpr (std::is_pointer_v<T>)
-        return data;
-    else
-        return data.operator->();
-}
 }  // namespace ut
 
 #endif  // UT_OPTIONALOF_HPP
