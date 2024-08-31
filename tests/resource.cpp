@@ -9,7 +9,7 @@ void release(Res const &) {
     func_released = true;
 }
 
-TEST_CASE("Value resouce initialisation", "[resource]") {
+TEST_CASE("resource value initialisation", "[resource]") {
     SECTION("lambda") {
         bool released = false;
 
@@ -27,7 +27,7 @@ TEST_CASE("Value resouce initialisation", "[resource]") {
     }
 }
 
-TEST_CASE("Delayed value initialisatoin", "[resource]") {
+TEST_CASE("resource delayed value initialisatoin", "[resource]") {
 
     bool released = false;
 
@@ -73,4 +73,79 @@ TEST_CASE("resource ctad", "[resource]") {
         }
         REQUIRE(func_released);
     }
+}
+
+TEST_CASE("resource get", "[resource]") {
+    auto const release_value = [](int) {
+    };
+    auto const release_ptr = [](int const *) {
+    };
+
+    int val = 23;
+    ut::Resource res_val {val, release_value};
+    ut::Resource const const_res_val {val, release_value};
+    ut::Resource empty_res_val {release_value};
+
+    int *ptr_val = reinterpret_cast<int *>(0x123456789ABCDEF0);
+    int const *const_ptr_val = reinterpret_cast<int const *>(0xFEDCBA9876543210);
+
+    ut::Resource res_ptr {ptr_val, release_ptr};
+    ut::Resource const const_res_ptr {ptr_val, release_ptr};
+    ut::Resource res_const_ptr {const_ptr_val, release_ptr};
+    ut::Resource const const_res_const_ptr {const_ptr_val, release_ptr};
+
+    ut::Resource empty_res_ptr {nullptr, release_ptr};
+
+
+    SECTION("value") {
+        REQUIRE(res_val.get() == val);
+        REQUIRE(const_res_val.get() == val);
+
+        REQUIRE_THROWS(empty_res_val.get());
+    }
+
+    SECTION("pointer") {
+        REQUIRE(res_ptr.get() == ptr_val);
+        REQUIRE(const_res_ptr.get() == ptr_val);
+        REQUIRE(res_const_ptr.get() == const_ptr_val);
+        REQUIRE(const_res_const_ptr.get() == const_ptr_val);
+
+        REQUIRE_NOTHROW(empty_res_ptr.get());
+    }
+}
+
+TEST_CASE("resource operator->", "[resource]") {
+    struct S {
+        int i;
+    };
+
+    auto const release_value = [](S) {
+    };
+    auto const release_ptr = [](S const *) {
+    };
+
+    S val {23};
+    ut::Resource res_val {val, release_value};
+    ut::Resource const const_res_val {val, release_value};
+
+    SECTION("value") {
+        REQUIRE(res_val->i == 23);
+        REQUIRE(const_res_val->i == 23);
+    }
+
+    S *ptr_val = new S {42};
+    S const *const_ptr_val = ptr_val;
+
+    ut::Resource res_ptr {ptr_val, release_ptr};
+    ut::Resource const const_res_ptr {ptr_val, release_ptr};
+    ut::Resource res_const_ptr {const_ptr_val, release_ptr};
+    ut::Resource const const_res_const_ptr {const_ptr_val, release_ptr};
+
+    SECTION("pointer") {
+        REQUIRE(res_ptr->i == 42);
+        REQUIRE(const_res_ptr->i == 42);
+        REQUIRE(res_const_ptr->i == 42);
+        REQUIRE(const_res_const_ptr->i == 42);
+    }
+    delete ptr_val;
 }

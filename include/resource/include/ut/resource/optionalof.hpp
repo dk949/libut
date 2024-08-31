@@ -7,8 +7,16 @@ namespace ut {
 
 
 template<typename T>
-
 using OptionalOf = std::conditional_t<std::is_pointer_v<T>, T, std::optional<T>>;
+
+template<typename T>
+using ConstOptionalOf =
+    std::conditional_t<std::is_pointer_v<T>, std::add_pointer_t<std::remove_pointer_t<T> const>, std::optional<T const>>;
+
+template<typename T>
+using PointerOf = std::conditional_t<std::is_pointer_v<T>, T, std::add_pointer_t<T>>;
+template<typename T>
+using ConstPointerOf = std::conditional_t<std::is_pointer_v<T>, ConstOptionalOf<T>, std::add_pointer_t<T const>>;
 
 template<typename T>
 [[nodiscard]]
@@ -21,7 +29,7 @@ OptionalOf<T> nullValueOf() noexcept {
 
 template<typename T>
 [[nodiscard]]
-bool isNull(OptionalOf<T> const &data) noexcept {
+bool isNull(ConstOptionalOf<T> const &data) noexcept {
     if constexpr (std::is_pointer_v<T>)
         return data == nullptr;
     else
@@ -44,6 +52,31 @@ T &tryGetNonNullValue(OptionalOf<T> &data) noexcept(false) {
         return data;
     else
         return data.value();
+}
+
+template<typename T>
+[[nodiscard]]
+T const &tryGetConstNonNullValue(ConstOptionalOf<T> const &data) noexcept(false) {
+    if constexpr (std::is_pointer_v<T>)
+        return data;
+    else
+        return data.value();
+}
+
+template<typename T>
+PointerOf<T> operatorArrow(OptionalOf<T> &data) noexcept {
+    if constexpr (std::is_pointer_v<T>)
+        return data;
+    else
+        return data.operator->();
+}
+
+template<typename T>
+ConstPointerOf<T> constOperatorArrow(ConstOptionalOf<T> const &data) noexcept {
+    if constexpr (std::is_pointer_v<T>)
+        return data;
+    else
+        return data.operator->();
 }
 }  // namespace ut
 

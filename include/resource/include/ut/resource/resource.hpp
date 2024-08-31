@@ -6,8 +6,13 @@ namespace ut {
 
 template<typename T, typename D>
 class Resource {
-    OptionalOf<T> m_data = nullValueOf<T>();
+private:
+
+    mutable OptionalOf<T> m_data = nullValueOf<T>();
     D m_destructor;
+
+private:
+    static constexpr bool needs_internal_mutability = std::is_pointer_v<T> && !std::is_const_v<std::remove_pointer_t<T>>;
 
 public:
     template<typename Tt, typename Dd>
@@ -31,6 +36,11 @@ public:
     }
 
 public:
+    [[nodiscard]]
+    bool hasValue() const noexcept {
+        return isNull<T>();
+    }
+
     void acquire(T &&data) noexcept(noexcept(release()) && std::is_nothrow_move_assignable_v<T>) {
         release();
         m_data = std::move(data);
@@ -52,8 +62,30 @@ public:
         return tmp;
     }
 
+    [[nodiscard]]
     T &get() noexcept(false) {
         return tryGetNonNullValue<T>(m_data);
+    }
+
+    [[nodiscard]]
+    T const &get() const noexcept(false) {
+        if constexpr (needs_internal_mutability)
+            return tryGetNonNullValue<T>(m_data);
+        else
+            return tryGetConstNonNullValue<T>(m_data);
+    }
+
+    [[nodiscard]]
+    PointerOf<T> operator->() noexcept {
+        return operatorArrow<T>(m_data);
+    }
+
+    [[nodiscard]]
+    std::conditional_t<needs_internal_mutability, PointerOf<T>, ConstPointerOf<T>> operator->() const noexcept {
+        if constexpr (needs_internal_mutability)
+            return operatorArrow<T>(m_data);
+        else
+            return constOperatorArrow<T>(m_data);
     }
 };
 
