@@ -59,13 +59,13 @@ TEST_CASE("Runtime hashing", "[constexpr_hash]") {
     auto str_cpy_2 = str2;
     auto str_cpy_3 = str3;
 
-    auto str1_hash = ut::fnv_1a<std::size_t>(str1.c_str());
-    auto str2_hash = ut::fnv_1a<std::size_t>(str2.c_str());
-    auto str3_hash = ut::fnv_1a<std::size_t>(str3.c_str());
+    auto str1_hash = ut::fnv_1a<std::size_t>(str1);
+    auto str2_hash = ut::fnv_1a<std::size_t>(str2);
+    auto str3_hash = ut::fnv_1a<std::size_t>(str3);
 
-    auto str_cpy_1_hash = ut::fnv_1a<std::size_t>(str_cpy_1.c_str());
-    auto str_cpy_2_hash = ut::fnv_1a<std::size_t>(str_cpy_2.c_str());
-    auto str_cpy_3_hash = ut::fnv_1a<std::size_t>(str_cpy_3.c_str());
+    auto str_cpy_1_hash = ut::fnv_1a<std::size_t>(str_cpy_1);
+    auto str_cpy_2_hash = ut::fnv_1a<std::size_t>(str_cpy_2);
+    auto str_cpy_3_hash = ut::fnv_1a<std::size_t>(str_cpy_3);
 
     REQUIRE(str1_hash == str_cpy_1_hash);
     REQUIRE(str2_hash == str_cpy_2_hash);
