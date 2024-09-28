@@ -82,6 +82,15 @@ public:
             : m_data(std::forward<Tt>(data))
             , m_destructor(std::forward<Dd>(destructor)) { }
 
+    Resource() noexcept(std::is_nothrow_default_constructible_v<D>)  //
+        requires(std::is_default_constructible_v<D>)
+            : m_destructor() { }
+
+    template<typename Tt>
+    explicit Resource(Tt &&data) noexcept(std::is_nothrow_constructible_v<T, Tt &&>)
+        requires(std::is_same_v<std::remove_cvref_t<Tt>, std::remove_cvref_t<T>>)
+            : m_data(std::forward<Tt>(data)) { }
+
     template<typename Dd>
     explicit Resource(Dd &&destructor) noexcept(std::is_nothrow_constructible_v<D, Dd &&>)
             : m_destructor(std::forward<Dd>(destructor)) { }

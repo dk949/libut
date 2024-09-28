@@ -219,3 +219,20 @@ TEST_CASE("resource malloced", "[resource]") {
     }
     SUCCEED("No double free");
 }
+
+TEST_CASE("default ctor", "[resource]") {
+    static int released = 0;
+    {
+        ut::Resource<int, decltype([](int) { released++; })> res {};
+        res.acquire(1);
+    }
+    REQUIRE(released == 1);
+}
+
+TEST_CASE("default constructable dtor + single arg ctor", "[resource]") {
+    static int released = 0;
+    {
+        ut::Resource<int, decltype([](int) { released++; })> res {1};
+    }
+    REQUIRE(released == 1);
+}
