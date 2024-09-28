@@ -75,6 +75,35 @@ TEST_CASE("resource ctad", "[resource]") {
     }
 }
 
+TEST_CASE("resource hasValue", "[resource]") {
+    auto const release_value = [](int) {
+    };
+
+    auto const release_ptr = [](int const *) {
+    };
+
+    ut::Resource<int, decltype(release_value)> val_empty {release_value};
+    ut::Resource<int *, decltype(release_ptr)> const ptr_empty {release_ptr};
+
+    int v = 0;
+    ut::Resource<int, decltype(release_value)> const val {v, release_value};
+    ut::Resource<int *, decltype(release_ptr)> ptr {&v, release_ptr};
+
+    SECTION("value") {
+        REQUIRE(!val_empty.hasValue());
+        REQUIRE(val.hasValue());
+        REQUIRE(!val_empty);
+        REQUIRE(val);
+    }
+
+    SECTION("pointer") {
+        REQUIRE(!ptr_empty);
+        REQUIRE(ptr);
+        REQUIRE(!ptr_empty.hasValue());
+        REQUIRE(ptr.hasValue());
+    }
+}
+
 TEST_CASE("resource get", "[resource]") {
     auto const release_value = [](int) {
     };

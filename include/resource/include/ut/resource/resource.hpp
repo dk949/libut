@@ -99,7 +99,11 @@ public:
 public:
     [[nodiscard]]
     bool hasValue() const noexcept {
-        return isNull<T>();
+        return !isNull<T>(m_data);
+    }
+
+    [[nodiscard]] operator bool() const noexcept {
+        return hasValue();
     }
 
     /**
