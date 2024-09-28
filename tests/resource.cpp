@@ -174,3 +174,33 @@ TEST_CASE("resource operator->", "[resource]") {
     }
     delete ptr_val;
 }
+
+TEST_CASE("resource move ctor", "[resource]") {
+    int val_released = 0;
+    int ptr_released = 0;
+    auto const release_value = [&](int) {
+        REQUIRE(!val_released);
+        val_released++;
+    };
+
+    auto const release_ptr = [&](int const *) {
+        REQUIRE(!ptr_released);
+        ptr_released = true;
+    };
+
+    int v = 0;
+    SECTION("value") {
+        {
+            ut::Resource<int, decltype(release_value)> val1 {v, release_value};
+            auto val2 = std::move(val1);
+        }
+        REQUIRE(val_released == 1);
+    }
+    SECTION("pointer") {
+        {
+            ut::Resource<int *, decltype(release_ptr)> ptr1 {&v, release_ptr};
+            auto ptr2 = std::move(ptr1);
+        }
+        REQUIRE(ptr_released == 1);
+    }
+}

@@ -89,8 +89,21 @@ public:
     Resource(Resource const &) = delete;
     Resource &operator=(Resource const &) = delete;
 
-    Resource(Resource &&) = default;
-    Resource &operator=(Resource &&) = default;
+    Resource(Resource &&other) noexcept(
+        std::is_nothrow_move_constructible_v<T> && std::is_nothrow_move_constructible_v<D>)
+            : m_data(std::move(other.m_data))
+            , m_destructor(std::move(other.m_destructor)) {
+        other.m_data = nullValueOf<T>();
+    }
+
+    Resource &operator=(Resource &&other) noexcept(
+        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_assignable_v<D>) {
+        if (this == &other) return this;
+        release();
+        m_data = std::move(other.m_data);
+        m_destructor = std::move(other.m_destructor);
+        other.m_data = nullValueOf<T>();
+    }
 
     ~Resource() noexcept(noexcept(release())) {
         release();
