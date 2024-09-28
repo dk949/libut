@@ -233,6 +233,11 @@ template<typename Dd>
 Resource(Dd &&destructor)
     -> Resource<std::decay_t<typename ut::detail::GetArg<std::remove_pointer_t<std::decay_t<Dd>>>::Arg>, std::decay_t<Dd>>;
 
+template<typename T>
+auto malloced(T *t) {
+    return Resource(t, [](auto *ptr) { free(ptr); });
+}
+
 }  // namespace ut
 
 #endif  // UT_RESOURCE_HPP

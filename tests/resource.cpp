@@ -204,3 +204,18 @@ TEST_CASE("resource move ctor", "[resource]") {
         REQUIRE(ptr_released == 1);
     }
 }
+
+TEST_CASE("resource malloced", "[resource]") {
+    {
+        [[maybe_unused]]
+        auto m = ut::malloced(malloc(10));
+    }
+    SUCCEED("No memeory leak");
+
+
+    {
+        auto m = ut::malloced(malloc(12));
+        free(m.takeOwnership());
+    }
+    SUCCEED("No double free");
+}
