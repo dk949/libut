@@ -10,7 +10,7 @@ from pathlib import Path
 import subprocess as sp
 
 REPO_BASE = Path(__file__).parent.parent
-INCLUDE = REPO_BASE / 'include'
+INCLUDE = REPO_BASE / "include"
 TOKEN_LOC = REPO_BASE / "token"
 
 if not TOKEN_LOC.exists():
@@ -49,7 +49,7 @@ target_sources(libut_target_{name} PUBLIC
 
 message(STATUS "libut: adding UT::{name}")
 add_library(UT::{name} ALIAS libut_target_{name})
-"""
+    """
 
 
 def add_params(url: str, params: dict[str, Any]) -> str:
@@ -68,18 +68,20 @@ def make_request(endpoint: str, params: dict[str, Any] | None = None) -> Request
     return Request(url, headers=HEADERS, method="GET")
 
 
-def get_page(endpoint: str, params: dict[str, Any] | None = None, *, as_json=True) -> Any:
+def get_page(
+    endpoint: str, params: dict[str, Any] | None = None, *, as_json=True
+) -> Any:
     req = make_request(endpoint, params)
     with urlopen(req) as response:
         if as_json:
             return json.load(response)
-        return response.read().decode('utf-8')
+        return response.read().decode("utf-8")
 
 
 def read_remote_file(url: str) -> str:
-    req = Request(url, headers={'User-Agent': USER_AGENT}, method="GET")
+    req = Request(url, headers={"User-Agent": USER_AGENT}, method="GET")
     with urlopen(req) as response:
-        return response.read().decode('utf-8')
+        return response.read().decode("utf-8")
 
 
 def list_gists():
@@ -90,11 +92,10 @@ def list_gists():
 
 
 def is_new_libut_gist(gist: dict[str, Any], file_list: list[str]) -> str | None:
-    if 'files' not in gist:
+    if "files" not in gist:
         raise RuntimeError(f"Gist does not follow the schema\n{gist}")
-    files: dict[str, dict[str, Any]] = gist['files']
-    files = dict(filter(lambda file: file[1].get("language") == "C++",
-                        files.items()))
+    files: dict[str, dict[str, Any]] = gist["files"]
+    files = dict(filter(lambda file: file[1].get("language") == "C++", files.items()))
     # no C++ files
     if not files:
         return None
@@ -108,14 +109,14 @@ def is_new_libut_gist(gist: dict[str, Any], file_list: list[str]) -> str | None:
             continue
         if "raw_url" not in info:
             raise RuntimeError(f"Gist does not follow the schema\n{gist}")
-        contents = read_remote_file(info['raw_url'])
+        contents = read_remote_file(info["raw_url"])
         if contents.startswith("#ifndef UT_"):
             return str(Path(name).with_suffix(""))
     return None
 
 
 def tab(s: str):
-    return '\n    '.join(s.split('\n'))
+    return "\n    ".join(s.split("\n"))
 
 
 def git(*args: str) -> bool:
@@ -123,7 +124,8 @@ def git(*args: str) -> bool:
         sp.check_output(["git", *args], stderr=sp.PIPE)
     except sp.CalledProcessError as e:
         print(
-            f"command `{' '.join(map(str, e.args[1]))}` failed with code {e.returncode}:\n\t{tab(e.stderr.decode('utf-8'))}")
+            f"command `{' '.join(map(str, e.args[1]))}` failed with code {e.returncode}:\n\t{tab(e.stderr.decode('utf-8'))}"
+        )
         return False
     return True
 
@@ -144,7 +146,7 @@ def pull_cloned_gists():
             if not pull(repo):
                 continue
             for f in repo.iterdir():
-                if f.is_file() and not f.name.startswith('.'):
+                if f.is_file() and not f.name.startswith("."):
                     file_list.append(f.name)
     return file_list
 
@@ -154,7 +156,14 @@ def add(url: str, name: str):
     repo_config_dir.mkdir(parents=True, exist_ok=True)
     repo_dir = repo_config_dir / name
     print(f"Cloning {name}")
-    return git("-C", str(REPO_BASE), "submodule", "add", url, str(repo_dir.relative_to(REPO_BASE)))
+    return git(
+        "-C",
+        str(REPO_BASE),
+        "submodule",
+        "add",
+        url,
+        str(repo_dir.relative_to(REPO_BASE)),
+    )
 
 
 def write_cmake(name: str):
@@ -176,13 +185,15 @@ def update_readme():
 
     pattern = re.compile(
         r"(<!-- AUTOGEN_BEGIN -->\n).*(\n<!-- AUTOGEN_END -->\n)",
-        re.MULTILINE | re.DOTALL
+        re.MULTILINE | re.DOTALL,
     )
 
-    repl = [r"\1"] \
-        + [f"* `UT::{name.name}`" for name in INCLUDE.iterdir() if name.is_dir()] \
+    repl = (
+        [r"\1"]
+        + [f"* `UT::{name.name}`" for name in INCLUDE.iterdir() if name.is_dir()]
         + [r"\2"]
-    readme = re.sub(pattern, '\n'.join(repl), readme)
+    )
+    readme = re.sub(pattern, "\n".join(repl), readme)
 
     with open(readme_file, "w") as f:
         f.write(readme)
