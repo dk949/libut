@@ -30,11 +30,23 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
 
 
 def populate_cmake_template(name: str):
+    file_list = "\n".join(
+        f"        ${{CMAKE_CURRENT_SOURCE_DIR}}/{h}"
+        for h in Path("include").joinpath("ut").joinpath(name).iterdir()
+        if h.is_file()
+    )
+
     return f"""cmake_minimum_required(VERSION 3.21)
 project(libut LANGUAGES CXX)
 
 add_library(libut_target_{name} INTERFACE)
-target_include_directories(libut_target_{name} INTERFACE ${{CMAKE_CURRENT_SOURCE_DIR}}/include)
+target_sources(libut_target_{name} PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS ${{CMAKE_CURRENT_SOURCE_DIR}}/include
+    FILES
+        {file_list}
+)
+
 message(STATUS "libut: adding UT::{name}")
 add_library(UT::{name} ALIAS libut_target_{name})
 """
