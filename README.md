@@ -51,6 +51,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::constexpr_hash`
 * `UT::trim`
 * `UT::pack_loops`
+* `UT::static_string`
 * `UT::curry`
 * `UT::defer`
 * `UT::print`
