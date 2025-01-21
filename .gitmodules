@@ -37,3 +37,6 @@
 [submodule "include/trim/include/ut/trim"]
 	path = include/trim/include/ut/trim
 	url = https://gist.github.com/dk949/78dd944ea2b9763eb61cc5a652c35900
+[submodule "include/copy_traits/include/ut/copy_traits"]
+	path = include/copy_traits/include/ut/copy_traits
+	url = https://gist.github.com/dk949/25b098148ff7377bb5c157dde661d2ef

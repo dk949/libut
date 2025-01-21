@@ -44,6 +44,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::pair`
 * `UT::add_noexcept`
 * `UT::sv_to_num`
+* `UT::copy_traits`
 * `UT::realloc_unique_ptr`
 * `UT::assert`
 * `UT::resource`
