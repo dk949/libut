@@ -75,8 +75,6 @@ TEST_CASE("resource ctad", "[resource]") {
     }
 }
 
-void foo(int){}
-
 TEST_CASE("resource default destructor ctor", "[resource]") {
     static bool released_val;
     released_val = false;
@@ -90,13 +88,10 @@ TEST_CASE("resource default destructor ctor", "[resource]") {
     REQUIRE(released_val);
 
     {
-
         int i;
         ut::Resource<int *, decltype([](int *) { released_ptr = true; })> ptr {&i};
     }
     REQUIRE(released_ptr);
-
-    ut::Resource<int, decltype(foo) *> r {1};
 }
 
 TEST_CASE("resource hasValue", "[resource]") {

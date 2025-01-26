@@ -2,6 +2,8 @@
 #define UT_RESOURCE_HPP
 #include "optionalof.hpp"
 
+#include <type_traits>
+
 /* Generic resource holder with a destructor.
  *
  * Similar to std::uniqur_ptr, but:
@@ -87,12 +89,17 @@ public:
             : m_destructor() { }
 
     template<typename Tt>
-    explicit Resource(Tt &&data) noexcept(std::is_nothrow_constructible_v<T, Tt &&>)
-        requires(std::is_same_v<std::remove_cvref_t<Tt>, std::remove_cvref_t<T>>)
-            : m_data(std::forward<Tt>(data)) { }
+    explicit Resource(Tt &&data) noexcept(std::is_nothrow_constructible_v<T, Tt &&>) requires(  //
+        std::is_same_v<std::remove_cvref_t<Tt>, std::remove_cvref_t<T>>                         //
+            &&std::is_default_constructible_v<D>                                                //
+        && !(std::is_pointer_v<D> && std::is_function_v<std::remove_pointer_t<D>>)              //
+        )
+            : m_data(std::forward<Tt>(data))
+            , m_destructor {} { }
 
     template<typename Dd>
     explicit Resource(Dd &&destructor) noexcept(std::is_nothrow_constructible_v<D, Dd &&>)
+        requires(std::is_constructible_v<D, Dd>)
             : m_destructor(std::forward<Dd>(destructor)) { }
 
     Resource(Resource const &) = delete;
