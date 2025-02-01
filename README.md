@@ -2,11 +2,11 @@
 
 [![CMake build and test](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml)
 
-    Various random files I've been saving as gists, all submoduled in one big repo.
+    Various useful bits of c++
 
-This is a collection of C++ headers (header only libraries?) for doing useful
-things. Such as printing human readable type names or converting `string_view`s
-to numbers.
+This is header only C++ library for doing useful things. Such as printing human
+readable type names, converting `string_view`s to numbers. See the [Currently
+available targets](#currently-available-targets) section for detail.
 
 All files are in individual directories under `include`.
 
@@ -21,7 +21,7 @@ Simply add the following to your `CMakeLists.txt`:
 
 ```cmake
 include(FetchContent)
-# Set the directory to download dependencies to. Avoids putting them in $buildDir 
+# Set the directory to download dependencies to. Avoids putting them in $buildDir
 set(FETCHCONTENT_BASE_DIR "${PROJECT_SOURCE_DIR}/_deps")
 FetchContent_Declare(
   libut
@@ -79,10 +79,9 @@ ctest --output-on-failure --test-dir build/tests
 
 _NOTE:_ you can use the `local` preset to build with
 [ninja](https://ninja-build.org/), or `default` to build with the default
-generator (e.g. "Unix Makefiles" on linux)
+generator (e.g. "Unix Makefiles" on Linux)
 
 ## License
 
-Each header file has a license (usually at the bottom). For files which don't
-(such as scripts and `CMakeLists.txt`s), see `LICENSE` file in the root of this
-repo.
+The files included as gists, the license is included in the file (usually at the
+bottom). For all other files, see `LICENSE` in the root of this repo.
