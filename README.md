@@ -53,6 +53,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::trim`
 * `UT::pack_loops`
 * `UT::static_string`
+* `UT::mt_queue`
 * `UT::curry`
 * `UT::defer`
 * `UT::print`
