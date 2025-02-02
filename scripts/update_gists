@@ -87,7 +87,7 @@ def read_remote_file(url: str) -> str:
 def list_gists():
     # with open("save.json", "r") as j:
     #     return json.load(j)
-    gists = get_page("gists", {"per_page": 40}, as_json=True)
+    gists = get_page("gists", {"per_page": 50}, as_json=True)
     return gists
 
 
@@ -176,6 +176,12 @@ def write_cmake(name: str):
         f.write(populate_cmake_template(name))
 
 
+def get_desc(p: Path):
+    desc_file = p / "include" / "ut" / p.name / "__description__"
+    with open(desc_file) as f:
+        return f.read().strip()
+
+
 def update_readme():
     print("Updating README.md")
     readme_file = REPO_BASE / "README.md"
@@ -190,7 +196,11 @@ def update_readme():
 
     repl = (
         [r"\1"]
-        + [f"* `UT::{name.name}`" for name in INCLUDE.iterdir() if name.is_dir()]
+        + [
+            f"* `UT::{name.name}`: {get_desc(name)}"
+            for name in INCLUDE.iterdir()
+            if name.is_dir()
+        ]
         + [r"\2"]
     )
     readme = re.sub(pattern, "\n".join(repl), readme)
