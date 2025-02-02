@@ -39,24 +39,24 @@ target_link_libraries(MY_TARGET UT::target_name)
 
 <!-- AUTOGEN_BEGIN -->
 
-* `UT::ptr_containers`
-* `UT::check`
-* `UT::pair`
-* `UT::add_noexcept`
-* `UT::sv_to_num`
-* `UT::copy_traits`
-* `UT::realloc_unique_ptr`
-* `UT::assert`
-* `UT::resource`
-* `UT::demangle`
-* `UT::constexpr_hash`
-* `UT::trim`
-* `UT::pack_loops`
-* `UT::static_string`
-* `UT::mt_queue`
-* `UT::curry`
-* `UT::defer`
-* `UT::print`
+* `UT::ptr_containers`: containers for storing owning pointers
+* `UT::check`: type which prints when it is constructed/copied/moved/destructed
+* `UT::pair`: a better `std::pair` implementation
+* `UT::add_noexcept`: add the `noexcept` specifier to a function type
+* `UT::sv_to_num`: convert `std::string_view` to a number
+* `UT::copy_traits`: copy cvref qualifiers from one type to another
+* `UT::realloc_unique_ptr`: `realloc` functionality for `std::uniqur_ptr`
+* `UT::assert`: various assertion macros
+* `UT::resource`: a more general version of `std::unique_ptr` that operates on values
+* `UT::demangle`: convert types into human readable strings
+* `UT::constexpr_hash`: a hashing function usable in `constexpr` context
+* `UT::trim`: trim characters from start and end of a `std::string_view`
+* `UT::pack_loops`: loop over variadic template parameters
+* `UT::static_string`: compile time known string usable as a template parameter
+* `UT::mt_queue`: thread safe FIFO queue
+* `UT::curry`: create a curried function out of a regular function
+* `UT::defer`: a macro to defer execution until the scope ends
+* `UT::print`: macros for printing using `std::format` in c++20
 
 <!-- AUTOGEN_END -->
 
