@@ -1,4 +1,5 @@
 #include <catch.hpp>
+#define UT_DEFER_NO_PREFIX
 #include <ut/defer/defer.hpp>
 
 #include <numeric>
