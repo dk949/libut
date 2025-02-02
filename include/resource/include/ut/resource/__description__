@@ -1,0 +1,1 @@
+a more general version of `std::unique_ptr` that operates on values
