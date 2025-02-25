@@ -30,10 +30,10 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
 
 
 def populate_cmake_template(name: str, dir: Path):
-    file_list = "\n".join(
-        f"        ${{CMAKE_CURRENT_SOURCE_DIR}}/{h.relative_to(dir)}"
+    file_list = "\n        ".join(
+        f"${{CMAKE_CURRENT_SOURCE_DIR}}/{h.relative_to(dir)}"
         for h in (INCLUDE / name / "include" / "ut" / name).iterdir()
-        if h.is_file()
+        if h.is_file() and h.suffix == ".hpp"
     )
 
     return f"""cmake_minimum_required(VERSION 3.21)
