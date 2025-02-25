@@ -29,9 +29,9 @@ HEADERS = {
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
 
 
-def populate_cmake_template(name: str):
+def populate_cmake_template(name: str, dir: Path):
     file_list = "\n".join(
-        f"        ${{CMAKE_CURRENT_SOURCE_DIR}}/{h}"
+        f"        ${{CMAKE_CURRENT_SOURCE_DIR}}/{h.relative_to(dir)}"
         for h in (INCLUDE / name / "include" / "ut" / name).iterdir()
         if h.is_file()
     )
@@ -177,7 +177,7 @@ def write_cmake(name: str):
         return False
     print(f"Generating CMake file for target UT::{name}")
     with open(cmake_file, "w") as f:
-        f.write(populate_cmake_template(name))
+        f.write(populate_cmake_template(name, cmake_file.parent))
 
 
 def get_desc(p: Path):
