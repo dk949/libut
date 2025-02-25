@@ -132,10 +132,11 @@ def git(*args: str) -> bool:
 
 def pull(path: Path):
     print("Pulling", path.relative_to(REPO_BASE))
-    if not git("-C", str(path), "pull"):
-        return False
-    return git("add", str(path))
-
+    return (
+        git("-C", str(path), "checkout", "trunk")
+        and git("-C", str(path), "pull")
+        and git("add", str(path))
+    )
 
 def pull_cloned_gists():
     file_list = []
