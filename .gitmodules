@@ -31,3 +31,15 @@
 [submodule "include/copy_traits/include/ut/copy_traits"]
 	path = include/copy_traits/include/ut/copy_traits
 	url = https://gist.github.com/dk949/25b098148ff7377bb5c157dde661d2ef
+[submodule "include/check/include/ut/check"]
+	path = include/check/include/ut/check
+	url = https://gist.github.com/dk949/eb6d451f925f196480032f3e8ad14cce
+[submodule "include/constexpr_hash/include/ut/constexpr_hash"]
+	path = include/constexpr_hash/include/ut/constexpr_hash
+	url = https://gist.github.com/dk949/d96a33574723b17cf705abb5fb04ec50
+[submodule "include/add_noexcept/include/ut/add_noexcept"]
+	path = include/add_noexcept/include/ut/add_noexcept
+	url = https://gist.github.com/dk949/d3e0628ee5768bc65c474ec370d77f55
+[submodule "include/change_observer/include/ut/change_observer"]
+	path = include/change_observer/include/ut/change_observer
+	url = https://gist.github.com/dk949/2508ff2b4b5ddf152e7b6c027e8f13c4
