@@ -32,7 +32,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
 def populate_cmake_template(name: str):
     file_list = "\n".join(
         f"        ${{CMAKE_CURRENT_SOURCE_DIR}}/{h}"
-        for h in Path("include").joinpath("ut").joinpath(name).iterdir()
+        for h in (INCLUDE / name / "include" / "ut" / name).iterdir()
         if h.is_file()
     )
 
@@ -138,6 +138,7 @@ def pull(path: Path):
         and git("add", str(path))
     )
 
+
 def pull_cloned_gists():
     file_list = []
 
@@ -168,6 +169,8 @@ def add(url: str, name: str):
 
 
 def write_cmake(name: str):
+    cmake_dir = INCLUDE / f"{name}"
+    cmake_dir.mkdir(exist_ok=True)
     cmake_file = INCLUDE / f"{name}" / "CMakeLists.txt"
     if cmake_file.exists():
         print("file", cmake_file, "already exists", file=sys.stderr)
