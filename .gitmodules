@@ -40,3 +40,6 @@
 [submodule "include/add_noexcept/include/ut/add_noexcept"]
 	path = include/add_noexcept/include/ut/add_noexcept
 	url = https://gist.github.com/dk949/d3e0628ee5768bc65c474ec370d77f55
+[submodule "include/change_observer/include/ut/change_observer"]
+	path = include/change_observer/include/ut/change_observer
+	url = https://gist.github.com/dk949/2508ff2b4b5ddf152e7b6c027e8f13c4
