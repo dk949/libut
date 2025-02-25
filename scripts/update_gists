@@ -181,7 +181,7 @@ def write_cmake(name: str):
 
 
 def get_desc(p: Path):
-    desc_file = p / "include" / "ut" / p.name / "__description__"
+    desc_file = p / "include" / "ut" / p.name / "zzz_description"
     with open(desc_file) as f:
         return f.read().strip()
 
