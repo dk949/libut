@@ -1,6 +1,25 @@
 include(compiler_warnings.cmake)
 
-file(GLOB_RECURSE TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(TEST_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/add_noexcept.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/change_observer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/check.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/constexpr_hash.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/copy_traits.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/defer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/demangle.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/mt_queue.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ownptrvec.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pack_loops.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pair.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ptrvecview.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/resource.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/static_string.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sv_to_num.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/template_helpers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/trim.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/valueptr.cpp
+)
 add_executable(libut_tests ${TEST_FILES})
 target_link_libraries(libut_tests PRIVATE UT::all)
 set_target_warnings(libut_tests)
