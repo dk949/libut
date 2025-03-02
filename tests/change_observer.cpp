@@ -225,10 +225,10 @@ std::string toString<NoCopy>(NoCopy const &v) {
 
 TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
     "[change_observer]",
-    // NoMove,  //
-    // NoCopy,  //
-    int,    //
-    Simple  //
+    NoMove,  //
+    NoCopy,  //
+    int,     //
+    Simple   //
 ) {
     SECTION("No compare") {
         using Observer = ut::ChangeObserver<TestType, ut::ChangeObserverKeepOldCopy::Yes, void>;
@@ -256,44 +256,51 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
             value_ctor.onChange([&](auto &&...) { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
-            value_ctor = default_val;
+            if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                value_ctor = default_val;
+            } else {
+                value_ctor = std::move(default_val);
+            }
             value_ctor = Observer {getValue<TestType>()};
             value_ctor = Observer {getValue<TestType>()};
             REQUIRE(changed == 3);
         }
         SECTION("getRef & Proxy") {
-            int changed = 0;
-            Observer v;
-            v.onChange([&](auto &&...) { changed++; });
-            v.getRef() = getValue<TestType>();
-            REQUIRE(changed == 1);
-            {
-                auto ref = v.getRef();
-                ref = getDefaultValue<TestType>();
-                REQUIRE(changed == 1);  // No calls until ref goes out of scope
-            }
-            REQUIRE(changed == 2);
-            v.getRef() = getValue<TestType>();
-            REQUIRE(changed == 3);
-            {
-                // Setting the
-                auto ref = v.getRef();
-                ref = getDefaultValue<TestType>();
-                ref = getValue<TestType>();
-                ref = getDefaultValue<TestType>();
-                ref = getValue<TestType>();
-            }
-            REQUIRE(changed == 4);
-            REQUIRE(compare(v.get(), getValue<TestType>()));
-            if constexpr (requires { v.get().getX(); }) {
-                v.getRef()->setX(55);
-                REQUIRE(changed == 5);
-                v.getRef()->getX();
-                REQUIRE(changed == 6);  // Still counts as an update
-                std::as_const(v).getRef()->getX();
-                REQUIRE(changed == 6);  // no call
-                v.getCRef()->getX();
-                REQUIRE(changed == 6);  // no call
+            if constexpr (std::is_constructible_v<TestType, TestType const &>
+                          && std::is_assignable_v<TestType, TestType>) {
+                int changed = 0;
+                Observer v;
+                v.onChange([&](auto &&...) { changed++; });
+                v.getRef() = getValue<TestType>();
+                REQUIRE(changed == 1);
+                {
+                    auto ref = v.getRef();
+                    ref = getDefaultValue<TestType>();
+                    REQUIRE(changed == 1);  // No calls until ref goes out of scope
+                }
+                REQUIRE(changed == 2);
+                v.getRef() = getValue<TestType>();
+                REQUIRE(changed == 3);
+                {
+                    // Setting the
+                    auto ref = v.getRef();
+                    ref = getDefaultValue<TestType>();
+                    ref = getValue<TestType>();
+                    ref = getDefaultValue<TestType>();
+                    ref = getValue<TestType>();
+                }
+                REQUIRE(changed == 4);
+                REQUIRE(compare(v.get(), getValue<TestType>()));
+                if constexpr (requires { v.get().getX(); }) {
+                    v.getRef()->setX(55);
+                    REQUIRE(changed == 5);
+                    v.getRef()->getX();
+                    REQUIRE(changed == 6);  // Still counts as an update
+                    std::as_const(v).getRef()->getX();
+                    REQUIRE(changed == 6);  // no call
+                    v.getCRef()->getX();
+                    REQUIRE(changed == 6);  // no call
+                }
             }
         }
     }
@@ -324,42 +331,50 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
                 value_ctor.onChange([&](auto &&...) { changed++; });
                 Observer default_val;
                 Observer similar_val {getSimilarValue<TestType>()};
-                value_ctor = default_val;
+                if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                    value_ctor = default_val;
+                } else {
+                    value_ctor = std::move(default_val);
+                }
                 value_ctor = Observer {getValue<TestType>()};
                 value_ctor = Observer {getValue<TestType>()};
                 REQUIRE(changed == 2);
             }
             SECTION("getRef & Proxy") {
-                int changed = 0;
-                Observer v;
-                v.onChange([&](auto &&...) { changed++; });
-                v.getRef() = getValue<TestType>();
-                REQUIRE(changed == 1);
-                {
-                    auto ref = v.getRef();
-                    ref = getDefaultValue<TestType>();
-                    REQUIRE(changed == 1);  // No calls until ref goes out of scope
-                }
-                REQUIRE(changed == 2);
-                v.getRef() = getValue<TestType>();
-                REQUIRE(changed == 3);
-                {
-                    // Setting the
-                    auto ref = v.getRef();
-                    ref = getDefaultValue<TestType>();
-                    ref = getValue<TestType>();
-                    ref = getDefaultValue<TestType>();
-                    ref = getValue<TestType>();
-                }
-                REQUIRE(changed == 3);  // no call
-                REQUIRE(compare(v.get(), getValue<TestType>()));
-                if constexpr (requires { v.get().getX(); }) {
-                    v.getRef()->setX(55);
-                    REQUIRE(changed == 4);
-                    std::as_const(v).getRef()->getX();
-                    REQUIRE(changed == 4);  // no call
-                    v.getCRef()->getX();
-                    REQUIRE(changed == 4);  // no call
+                if constexpr (std::is_constructible_v<TestType, TestType const &>
+                              && std::is_assignable_v<TestType, TestType>) {
+
+                    int changed = 0;
+                    Observer v;
+                    v.onChange([&](auto &&...) { changed++; });
+                    v.getRef() = getValue<TestType>();
+                    REQUIRE(changed == 1);
+                    {
+                        auto ref = v.getRef();
+                        ref = getDefaultValue<TestType>();
+                        REQUIRE(changed == 1);  // No calls until ref goes out of scope
+                    }
+                    REQUIRE(changed == 2);
+                    v.getRef() = getValue<TestType>();
+                    REQUIRE(changed == 3);
+                    {
+                        // Setting the
+                        auto ref = v.getRef();
+                        ref = getDefaultValue<TestType>();
+                        ref = getValue<TestType>();
+                        ref = getDefaultValue<TestType>();
+                        ref = getValue<TestType>();
+                    }
+                    REQUIRE(changed == 3);  // no call
+                    REQUIRE(compare(v.get(), getValue<TestType>()));
+                    if constexpr (requires { v.get().getX(); }) {
+                        v.getRef()->setX(55);
+                        REQUIRE(changed == 4);
+                        std::as_const(v).getRef()->getX();
+                        REQUIRE(changed == 4);  // no call
+                        v.getCRef()->getX();
+                        REQUIRE(changed == 4);  // no call
+                    }
                 }
             }
         }
@@ -400,42 +415,50 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
             value_ctor.onChange([&](auto &&...) { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
-            value_ctor = default_val;
+            if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                value_ctor = default_val;
+            } else {
+                value_ctor = std::move(default_val);
+            }
             value_ctor = std::move(similar_val);
             value_ctor = Observer {getValue<TestType>()};
             REQUIRE(changed == 2);
         }
         SECTION("getRef & Proxy") {
-            int changed = 0;
-            Observer v;
-            v.onChange([&](auto &&...) { changed++; });
-            v.getRef() = getValue<TestType>();
-            REQUIRE(changed == 1);
-            {
-                auto ref = v.getRef();
-                ref = getDefaultValue<TestType>();
-                REQUIRE(changed == 1);  // No calls until ref goes out of scope
-            }
-            REQUIRE(changed == 2);
-            v.getRef() = getValue<TestType>();
-            REQUIRE(changed == 3);
-            {
-                // Setting the
-                auto ref = v.getRef();
-                ref = getDefaultValue<TestType>();
-                ref = getSimilarValue<TestType>();
-                ref = getDefaultValue<TestType>();
-                ref = getSimilarValue<TestType>();
-            }
-            REQUIRE(changed == 3);  // no call
-            REQUIRE(compare(v.get(), getSimilarValue<TestType>()));
-            if constexpr (requires { v.get().getX(); }) {
-                v.getRef()->setX(55);
-                REQUIRE(changed == 4);
-                std::as_const(v).getRef()->getX();
-                REQUIRE(changed == 4);  // no call
-                v.getCRef()->getX();
-                REQUIRE(changed == 4);  // no call
+            if constexpr (std::is_constructible_v<TestType, TestType const &>
+                          && std::is_assignable_v<TestType, TestType>) {
+
+                int changed = 0;
+                Observer v;
+                v.onChange([&](auto &&...) { changed++; });
+                v.getRef() = getValue<TestType>();
+                REQUIRE(changed == 1);
+                {
+                    auto ref = v.getRef();
+                    ref = getDefaultValue<TestType>();
+                    REQUIRE(changed == 1);  // No calls until ref goes out of scope
+                }
+                REQUIRE(changed == 2);
+                v.getRef() = getValue<TestType>();
+                REQUIRE(changed == 3);
+                {
+                    // Setting the
+                    auto ref = v.getRef();
+                    ref = getDefaultValue<TestType>();
+                    ref = getSimilarValue<TestType>();
+                    ref = getDefaultValue<TestType>();
+                    ref = getSimilarValue<TestType>();
+                }
+                REQUIRE(changed == 3);  // no call
+                REQUIRE(compare(v.get(), getSimilarValue<TestType>()));
+                if constexpr (requires { v.get().getX(); }) {
+                    v.getRef()->setX(55);
+                    REQUIRE(changed == 4);
+                    std::as_const(v).getRef()->getX();
+                    REQUIRE(changed == 4);  // no call
+                    v.getCRef()->getX();
+                    REQUIRE(changed == 4);  // no call
+                }
             }
         }
     }
@@ -443,10 +466,10 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
 
 TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
     "[change_observer]",
-    // NoMove,//
-    // NoCopy, //
-    int,    //
-    Simple  //
+    NoMove,  //
+    NoCopy,  //
+    int,     //
+    Simple   //
 ) {
     SECTION("No compare") {
         using Observer = ut::ChangeObserver<TestType, ut::ChangeObserverKeepOldCopy::No, void>;
@@ -469,7 +492,11 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
             value_ctor.onChange([&](auto &&...) { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
-            value_ctor = default_val;
+            if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                value_ctor = default_val;
+            } else {
+                value_ctor = std::move(default_val);
+            }
             value_ctor = Observer {getValue<TestType>()};
             value_ctor = Observer {getValue<TestType>()};
             REQUIRE(changed == 3);
@@ -535,7 +562,11 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
                 value_ctor.onChange([&](auto &&...) { changed++; });
                 Observer default_val;
                 Observer similar_val {getSimilarValue<TestType>()};
-                value_ctor = default_val;
+                if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                    value_ctor = default_val;
+                } else {
+                    value_ctor = std::move(default_val);
+                }
                 value_ctor = Observer {getValue<TestType>()};
                 value_ctor = Observer {getValue<TestType>()};
                 REQUIRE(changed == 2);
@@ -609,7 +640,11 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
             value_ctor.onChange([&](auto &&...) { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
-            value_ctor = default_val;
+            if constexpr (std::is_assignable_v<Observer, Observer const &>) {
+                value_ctor = default_val;
+            } else {
+                value_ctor = std::move(default_val);
+            }
             value_ctor = std::move(similar_val);
             value_ctor = Observer {getValue<TestType>()};
             REQUIRE(changed == 2);
