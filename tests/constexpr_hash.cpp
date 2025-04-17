@@ -1,13 +1,20 @@
 #include <catch.hpp>
 #include <ut/constexpr_hash/constexpr_hash.hpp>
 
+#include <algorithm>
 #include <array>
+#include <cctype>
+#include <iterator>
 #include <string>
 
 constexpr auto empty = "";
 constexpr auto short_str = "hello";
 constexpr auto long_str =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pellentesque justo eu mauris gravida aliquet. Nam et velit tortor. Vestibulum sit amet commodo ante. Fusce eleifend tellus ac euismod porta. Proin at gravida tortor. Suspendisse eget urna vitae dui varius auctor et ac quam. Phasellus sodales sodales dolor, vel aliquet erat posuere hendrerit. Donec consectetur orci eget pulvinar pellentesque. Donec in bibendum orci. Phasellus congue, ligula non tincidunt malesuada, nisl ligula mauris. ";
+constexpr auto ascii =
+    "\a\b\t\n\v\f\r\"\\@!#$%&'()*+,-./0123456789:;<=>?[]^_ `abcdefghijklmnopqrstuvwxyz{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+constexpr auto ascii_lower =
+    "\a\b\t\n\v\f\r\"\\@!#$%&'()*+,-./0123456789:;<=>?[]^_ `abcdefghijklmnopqrstuvwxyz{|}~abcdefghijklmnopqrstuvwxyz";
 
 constexpr auto len(char const *str) {
     return std::char_traits<char>::length(str);
@@ -79,4 +86,37 @@ TEST_CASE("Runtime hashing", "[constexpr_hash]") {
 
     REQUIRE(str3_hash != str_cpy_1_hash);
     REQUIRE(str3_hash != str_cpy_2_hash);
+}
+
+TEST_CASE("Compile time ignore case", "[constexpr_hash]") {
+
+    static constexpr auto ascii_2 = makeCopy<len(ascii)>(ascii);
+    static constexpr auto ascii_lower_2 = makeCopy<len(ascii_lower)>(ascii_lower);
+
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t>(ascii) == ut::fnv_1a<std::size_t>(ascii_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii)
+                   == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii)
+                   == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii)
+                   != ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii_2.data()));
+
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t>(ascii) != ut::fnv_1a<std::size_t>(ascii_lower_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii)
+                   != ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii_lower_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii)
+                   == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii_lower_2.data()));
+    STATIC_REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(ascii)
+                   == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(ascii_lower_2.data()));
+}
+
+TEST_CASE("Runtime ignore case", "[constexpr_hash]") {
+    std::string str1, str2;
+    std::generate_n(std::back_inserter(str1), 20, []() { return std::rand() % (128 - '!') + '!'; });
+    std::transform(str1.begin(), str1.end(), std::back_inserter(str2), [](char ch) { return std::tolower(ch); });
+
+    REQUIRE(ut::fnv_1a<std::size_t>(str1) != ut::fnv_1a<std::size_t>(str2));
+    REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(str1) != ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(str2));
+    REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(str1) == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(str2));
+    REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::Yes>(str1) == ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(str2));
 }
