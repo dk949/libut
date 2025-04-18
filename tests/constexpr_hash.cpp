@@ -112,8 +112,10 @@ TEST_CASE("Compile time ignore case", "[constexpr_hash]") {
 
 TEST_CASE("Runtime ignore case", "[constexpr_hash]") {
     std::string str1, str2;
-    std::generate_n(std::back_inserter(str1), 20, []() { return std::rand() % (128 - '!') + '!'; });
-    std::transform(str1.begin(), str1.end(), std::back_inserter(str2), [](char ch) { return std::tolower(ch); });
+    std::generate_n(std::back_inserter(str1), 20, []() { return static_cast<char>(std::rand() % (128 - '!') + '!'); });
+    std::transform(str1.begin(), str1.end(), std::back_inserter(str2), [](char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
 
     REQUIRE(ut::fnv_1a<std::size_t>(str1) != ut::fnv_1a<std::size_t>(str2));
     REQUIRE(ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(str1) != ut::fnv_1a<std::size_t, ut::CHIgnoreCase::No>(str2));
