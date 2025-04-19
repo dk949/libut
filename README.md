@@ -53,6 +53,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::constexpr_hash`: a hashing function usable in `constexpr` context
 * `UT::trim`: trim characters from start and end of a `std::string_view`
 * `UT::pack_loops`: loop over variadic template parameters
+* `UT::asis`: Provides a more convenient way to work with different kinds of dynamically polymorphic values.
 * `UT::static_string`: compile time known string usable as a template parameter
 * `UT::mt_queue`: thread safe FIFO queue
 * `UT::curry`: create a curried function out of a regular function

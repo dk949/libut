@@ -43,3 +43,6 @@
 [submodule "include/change_observer/include/ut/change_observer"]
 	path = include/change_observer/include/ut/change_observer
 	url = https://gist.github.com/dk949/2508ff2b4b5ddf152e7b6c027e8f13c4
+[submodule "include/asis/include/ut/asis"]
+	path = include/asis/include/ut/asis
+	url = https://gist.github.com/dk949/55ab7a19955b3161593067eb3837eb20
