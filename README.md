@@ -59,6 +59,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::curry`: create a curried function out of a regular function
 * `UT::defer`: a macro to defer execution until the scope ends
 * `UT::print`: macros for printing using `std::format` in c++20
+* `UT::overload`: creates a function object merging several other function objects as an overload set
 
 <!-- AUTOGEN_END -->
 
