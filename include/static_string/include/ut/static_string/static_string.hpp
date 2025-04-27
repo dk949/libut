@@ -38,13 +38,27 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
-#include <ostream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 
+#ifndef UT_DETAIL_THROW_OR_ABORT
+#    ifdef __cpp_exceptions
+#        include <stdexcept>
+#        define UT_DETAIL_THROW_OR_ABORT(T, msg) throw T(msg)
+#    else
+#        include <cstdlib>
+#        include <iostream>
+#        define UT_DETAIL_THROW_OR_ABORT(T, msg) \
+            do {                                 \
+                std::cerr << (msg) << '\n';      \
+                std::abort();                    \
+            } while (0)
+#    endif
+#endif
+
 namespace ut {
+
 
 template<typename Char, std::size_t count, typename Traits = std::char_traits<Char>>
 requires(count > 0) struct BasicStaticString {
@@ -143,7 +157,7 @@ public:  // Element access
         if (idx < size())
             return m_data[idx];
         else
-            throw std::out_of_range("StaticString access out of range");
+            UT_DETAIL_THROW_OR_ABORT(std::out_of_range, "StaticString access out of range");
     }
 
     [[nodiscard]]
@@ -151,7 +165,7 @@ public:  // Element access
         if (idx < size())
             return m_data[idx];
         else
-            throw std::out_of_range("StaticString access out of range");
+            UT_DETAIL_THROW_OR_ABORT(std::out_of_range, "StaticString access out of range");
     }
 
     [[nodiscard]]
@@ -510,7 +524,8 @@ public:
     }
 
     explicit constexpr BasicStaticString(view_type sv) {
-        if (sv.size() > count) throw std::out_of_range("Cannot construct BasicStaticString, string view too long");
+        if (sv.size() > count)
+            UT_DETAIL_THROW_OR_ABORT(std::out_of_range, "Cannot construct BasicStaticString, string view too long");
         traits_type::copy(m_data, sv.data(), sv.size());
         for (auto it = m_data + sv.size(); it < m_data + count; ++it) {
             *it = 0;
