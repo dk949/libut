@@ -31,6 +31,8 @@ target_precompile_headers(libut_tests PRIVATE <catch.hpp>)
 if(NOT MSVC)
     target_compile_options(libut_tests PUBLIC "-fsanitize=address" "-Og" "-g")
     target_link_options(libut_tests PUBLIC "-fsanitize=address" "-lg")
+else()
+    target_compile_options(libut_tests PUBLIC "/Zc:__cplusplus")
 endif()
 
 include(CTest)
