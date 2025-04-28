@@ -87,9 +87,9 @@ void loopOverTypesBreak() {
     int float_count = 0;
     UT_PACK_FOR_T(I, Ts, {
         count++;
-        if constexpr (std::is_same_v<I, float>) {
+        if (std::is_same_v<I, float>) {
             float_count++;
-        } else if constexpr (std::is_same_v<I, double>) {
+        } else if (std::is_same_v<I, double>) {
             UT_PACK_BREAK;
         }
     });
@@ -102,9 +102,9 @@ void loopOverTypesContinue() {
     int count = 0;
     int float_count = 0;
     UT_PACK_FOR_T(I, Ts, {
-        if constexpr (std::is_same_v<I, float>) {
+        if (std::is_same_v<I, float>) {
             float_count++;
-        } else if constexpr (std::is_same_v<I, double>) {
+        } else if (std::is_same_v<I, double>) {
             UT_PACK_CONTINUE;
         }
         count++;
