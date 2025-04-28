@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <ut/pack_loops/pack_loops.hpp>
 
+#include <type_traits>
+
 template<typename... T>
 void loopOverArgs(T... args) {
     int count = 0;
@@ -65,6 +67,52 @@ void loopOverParameterPackContinue() {
     REQUIRE(count == 4);
 }
 
+template<typename... Ts>
+void loopOverTypes() {
+    int count = 0;
+    int float_count = 0;
+    UT_PACK_FOR_T(I, Ts, {
+        count++;
+        if constexpr (std::is_same_v<I, float>) {
+            float_count++;
+        }
+    });
+    REQUIRE(count == 4);
+    REQUIRE(float_count == 2);
+}
+
+template<typename... Ts>
+void loopOverTypesBreak() {
+    int count = 0;
+    int float_count = 0;
+    UT_PACK_FOR_T(I, Ts, {
+        count++;
+        if constexpr (std::is_same_v<I, float>) {
+            float_count++;
+        } else if constexpr (std::is_same_v<I, double>) {
+            UT_PACK_BREAK;
+        }
+    });
+    REQUIRE(count == 4);
+    REQUIRE(float_count == 2);
+}
+
+template<typename... Ts>
+void loopOverTypesContinue() {
+    int count = 0;
+    int float_count = 0;
+    UT_PACK_FOR_T(I, Ts, {
+        if constexpr (std::is_same_v<I, float>) {
+            float_count++;
+        } else if constexpr (std::is_same_v<I, double>) {
+            UT_PACK_CONTINUE;
+        }
+        count++;
+    });
+    REQUIRE(count == 4);
+    REQUIRE(float_count == 2);
+}
+
 template<typename... T>
 int indexArgs(T... args) {
     return UT_PACK_IDX(args, 2);
@@ -88,6 +136,12 @@ TEST_CASE("pack for loop", "[pack_loops]") {
     loopOverParameterPack<0, 1, 2, 3>();
     loopOverParameterPackBreak<0, 1, 2, 3>();
     loopOverParameterPackContinue<0, -100, 1, -100, 2, -100, 3>();
+}
+
+TEST_CASE("type pack for loop", "[pack_loops]") {
+    loopOverTypes<int, float, double, float>();
+    loopOverTypesBreak<int, float, float, double, float, int>();
+    loopOverTypesContinue<int, float, double, float, int>();
 }
 
 TEST_CASE("pack index", "[pack_loops]") {
