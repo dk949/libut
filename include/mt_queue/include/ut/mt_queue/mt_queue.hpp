@@ -1,6 +1,10 @@
 #ifndef UT_MT_QUEUE_HPP
 #define UT_MT_QUEUE_HPP
 
+#if __cplusplus < 202'002L
+#    error this file has to be compiled with at least C++20
+#endif
+
 #include <condition_variable>
 #include <deque>
 #include <mutex>

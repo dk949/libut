@@ -1,6 +1,10 @@
 #ifndef UT_STATIC_STRING_HPP
 #define UT_STATIC_STRING_HPP
 
+#if __cplusplus < 202002L
+#error this file has to be compiled with at least C++20
+#endif
+
 /**Usage:
  * std >= c++20 (c++23)
  * // typedef using `char`

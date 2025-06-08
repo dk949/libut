@@ -1,6 +1,10 @@
 #ifndef CONTAINER_BASE_HPP
 #define CONTAINER_BASE_HPP
 
+#if __cplusplus < 202'002L
+#    error this file has to be compiled with at least C++20
+#endif
+
 #include "template_helpers.hpp"
 
 #ifndef assert
@@ -171,7 +175,7 @@ namespace detail {
 }
 
 template<typename T>
-struct IsDerivedFromContainerBase : decltype(detail::derivedFromContainerBase(std::declval<T *>())) { };
+struct IsDerivedFromContainerBase : decltype(detail::derivedFromContainerBase(std::declval<T *>())) {};
 
 template<typename T>
 inline constexpr bool IsDerivedFromContainerBaseV = IsDerivedFromContainerBase<T>::value;

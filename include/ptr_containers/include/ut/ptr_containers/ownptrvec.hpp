@@ -1,6 +1,10 @@
 #ifndef OWNPTRVEC_HPP
 #define OWNPTRVEC_HPP
 
+#if __cplusplus < 202'002L
+#    error this file has to be compiled with at least C++20
+#endif
+
 #include "container_base.hpp"
 #include "ptrvecview.hpp"
 #include "template_helpers.hpp"

@@ -1,5 +1,10 @@
 #ifndef VALUEPTR_HPP
 #define VALUEPTR_HPP
+
+#if __cplusplus < 202'002L
+#    error this file has to be compiled with at least C++20
+#endif
+
 #include "template_helpers.hpp"
 
 #include <memory>
