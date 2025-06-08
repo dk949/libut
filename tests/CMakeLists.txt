@@ -19,6 +19,7 @@ set(TEST_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/template_helpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/valueptr.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/err.cpp
 )
 add_executable(libut_tests ${TEST_FILES})
 target_link_libraries(libut_tests PRIVATE UT::all)

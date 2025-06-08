@@ -42,6 +42,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::ptr_containers`: containers for storing owning pointers
 * `UT::check`: type which prints when it is constructed/copied/moved/destructed
 * `UT::pair`: a better `std::pair` implementation
+* `UT::err`: convenient error type for use with std::expected
 * `UT::add_noexcept`: add the `noexcept` specifier to a function type
 * `UT::change_observer`: wrapper class that invokes callbacks when it's held value changes
 * `UT::sv_to_num`: convert `std::string_view` to a number

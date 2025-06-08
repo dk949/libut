@@ -49,3 +49,6 @@
 [submodule "include/overload/include/ut/overload"]
 	path = include/overload/include/ut/overload
 	url = https://gist.github.com/dk949/316411796aa993a7d3e823740ed352d8
+[submodule "include/err/include/ut/err"]
+	path = include/err/include/ut/err
+	url = https://gist.github.com/dk949/7ab26f6405813e246528994e0f560fba
