@@ -7,6 +7,11 @@
 #include <string_view>
 #include <vector>
 
+bool startsWith(std::string_view str, std::string_view with) {
+    if (str.size() < with.size()) return false;
+    return str.substr(0, with.size()) == with;
+}
+
 #define DFLT_CTOR(name) \
     name() noexcept { }
 #define DTOR(name) \
@@ -156,13 +161,13 @@ TEST_CASE("Check functionality", "[check]") {
 
 
     REQUIRE(vec.size() == 8);
-    // Using starts_with (instead of ==) because Check uses typeid name to identify objects
-    REQUIRE(vec.at(0).starts_with("Check();"));
-    REQUIRE(vec.at(1).starts_with("Check(const Check &);"));
-    REQUIRE(vec.at(2).starts_with("Check(Check &&);"));
-    REQUIRE(vec.at(3).starts_with("Check &operator=(Check);"));
-    REQUIRE(vec.at(4).starts_with("Check &operator=(Check &&);"));
-    REQUIRE(vec.at(5).starts_with("~Check();"));
-    REQUIRE(vec.at(6).starts_with("~Check();"));
-    REQUIRE(vec.at(7).starts_with("~Check();"));
+    // Using startsWith (instead of ==) because Check uses typeid name to identify objects
+    REQUIRE(startsWith(vec.at(0), "Check();"));
+    REQUIRE(startsWith(vec.at(1), "Check(const Check &);"));
+    REQUIRE(startsWith(vec.at(2), "Check(Check &&);"));
+    REQUIRE(startsWith(vec.at(3), "Check &operator=(Check);"));
+    REQUIRE(startsWith(vec.at(4), "Check &operator=(Check &&);"));
+    REQUIRE(startsWith(vec.at(5), "~Check();"));
+    REQUIRE(startsWith(vec.at(6), "~Check();"));
+    REQUIRE(startsWith(vec.at(7), "~Check();"));
 }

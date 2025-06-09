@@ -67,6 +67,8 @@ void loopOverParameterPackContinue() {
     REQUIRE(count == 4);
 }
 
+#if __cplusplus >= 202'002
+
 template<typename... Ts>
 void loopOverTypes() {
     int count = 0;
@@ -113,6 +115,8 @@ void loopOverTypesContinue() {
     REQUIRE(float_count == 2);
 }
 
+#endif
+
 template<typename... T>
 int indexArgs(T... args) {
     return UT_PACK_IDX(args, 2);
@@ -138,11 +142,13 @@ TEST_CASE("pack for loop", "[pack_loops]") {
     loopOverParameterPackContinue<0, -100, 1, -100, 2, -100, 3>();
 }
 
+#if __cplusplus >= 202'002
 TEST_CASE("type pack for loop", "[pack_loops]") {
     loopOverTypes<int, float, double, float>();
     loopOverTypesBreak<int, float, float, double, float, int>();
     loopOverTypesContinue<int, float, double, float, int>();
 }
+#endif
 
 TEST_CASE("pack index", "[pack_loops]") {
     REQUIRE(indexArgs(0, 0, 3, 0) == 3);

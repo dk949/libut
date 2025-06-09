@@ -20,10 +20,16 @@ constexpr auto len(char const *str) {
     return std::char_traits<char>::length(str);
 }
 
+constexpr char *copy(char *to, char const *from, std::size_t size) {
+    for (auto i = size_t(0); i < size; ++i)
+        to[i] = from[i];
+    return to;
+}
+
 template<std::size_t size>
 constexpr auto makeCopy(char const *str) {
     std::array<char, size + 1> arr {};
-    std::char_traits<char>::copy(arr.data(), str, arr.size());
+    copy(arr.data(), str, arr.size());
     arr[size] = 0;
     return arr;
 }
