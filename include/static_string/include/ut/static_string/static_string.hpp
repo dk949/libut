@@ -1,8 +1,8 @@
 #ifndef UT_STATIC_STRING_HPP
 #define UT_STATIC_STRING_HPP
 
-#if __cplusplus < 202002L
-#error this file has to be compiled with at least C++20
+#if __cplusplus < 202'002L
+#    error this file has to be compiled with at least C++20
 #endif
 
 /**Usage:
