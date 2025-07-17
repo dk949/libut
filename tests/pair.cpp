@@ -132,11 +132,11 @@ TEST_CASE("Pair operator==", "[pair]") {
         ut::pair up1 {"123"sv, 123};
         const ut::pair up2 {"124"sv, 123};
         ut::pair up3 {"124"sv, 123};
-        REQUIRE(other == up1);
+        REQUIRE((other == up1));
         REQUIRE(up1 == other);
-        REQUIRE(other != up2);
+        REQUIRE((other != up2));
         REQUIRE(up2 != other);
-        REQUIRE(other != up3);
+        REQUIRE((other != up3));
         REQUIRE(up3 != other);
     }
     SECTION("ut::array") {
