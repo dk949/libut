@@ -25,6 +25,7 @@ set(cxx_20_files
     ${CMAKE_CURRENT_SOURCE_DIR}/template_helpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/valueptr.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/switchboard.cpp
 )
 
 set(cxx_23_files
