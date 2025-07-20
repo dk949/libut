@@ -4,6 +4,7 @@
 
 #include <concepts>
 #include <cstdlib>
+#include <functional>
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
@@ -35,19 +36,45 @@ struct all_unique<T1, T2, Rest...> : std::conjunction<all_unique<T1, Rest...>, a
 template<typename... Ts>
 inline constexpr bool all_unique_v = all_unique<Ts...>::value;
 
+template<typename T>
+struct is_optional : std::false_type { };
+
+template<typename T>
+struct is_optional<std::optional<T>> : std::true_type { };
+
+template<typename T>
+inline constexpr bool is_optional_v = is_optional<T>::value;
+
 struct RegEntryKey {
-    std::string_view parser;
     char s_flag;
     std::string_view l_flag;
     bool operator==(RegEntryKey const &) const = default;
 };
 
+enum struct ParseMode { Short, Long, Positional };
+enum struct ParseErrorKind { OutOfArgsErorr, FormatErorr, Internal };
+
+struct ParseError {
+    ParseErrorKind kind;
+    std::string message;
+};
+
+struct RegEntry {
+    std::function<std::optional<ParseError>(ParseMode mode,  //
+        int total_argc,
+        int &current_argc,
+        char **&current_argv,
+        char short_mode_char,
+        bool short_mode_last_in_group)>
+        parse;
+    std::function<bool()> verify;
+};
+
 template<>
 struct std::hash<RegEntryKey> {
     std::size_t operator()(RegEntryKey const &key) const noexcept {
-        return (std::hash<std::string_view> {}(key.parser) << 0)  //
-             ^ (std::hash<char> {}(key.s_flag) << 1)              //
-             ^ (std::hash<std::string_view> {}(key.l_flag) << 2);
+        return (std::hash<char> {}(key.s_flag) << 0)  //
+             ^ (std::hash<std::string_view> {}(key.l_flag) << 1);
     }
 };
 
@@ -71,12 +98,23 @@ static constexpr auto nthName = NthName<n, rest...>::value;
 
 struct ArgParserBase { };
 
-template<ut::StaticString ThisParserName, typename ParentParserT = ArgParserBase>
-struct RegistryHolder {
+template<typename Parser, typename ParentParserT = ArgParserBase>
+struct RegistryHolder : ParentParserT {
     static Registry registry;
-    using ThisParser = RegistryHolder<ThisParserName, ParentParserT>;
+    using ThisParser = RegistryHolder<Parser, ParentParserT>;
     using ParentParser = ParentParserT;
+
+    static void addToRegistry(RegEntryKey key, RegEntry entry) { }
 };
+
+template<typename T>
+struct is_registry_holder : std::false_type { };
+
+template<typename Parser, typename ParentParserT>
+struct is_registry_holder<RegistryHolder<Parser, ParentParserT>> : std::true_type { };
+
+template<typename T>
+concept registry_holder = is_registry_holder<T>::value;
 
 struct ArgConf { };
 
@@ -95,16 +133,39 @@ struct Metavar : ArgConf {
 };
 
 template<typename T>
+struct Default : ArgConf {
+    T def;
+
+    Default(T d)
+            : def(std::move(d)) { }
+};
+
+struct Positional { };
+
+inline constexpr auto positional = Positional {};
+
+template<typename T>
+struct is_default : std::false_type { };
+
+template<typename T>
+struct is_default<Default<T>> : std::true_type { };
+
+template<typename T>
+inline constexpr bool is_default_v = is_default<T>::value;
+
+template<typename T>
 concept not_metavar = std::derived_from<T, ArgConf> && !std::same_as<T, Metavar>;
 
-template<typename T, typename ParentArgs>
+template<typename T, registry_holder ParentRegHolder>
 struct Arg {
 private:
+    using Data =
+        std::conditional_t<std::same_as<T, bool>, bool, std::conditional_t<is_optional_v<T>, T, std::optional<T>>>;
     char s_flag = 0;
     std::string_view l_flag = "";
     std::optional<Help> help;
     std::optional<Metavar> metavar;
-    T data {};
+    Data data {};
 public:
 
     template<std::derived_from<ArgConf>... Confs>
@@ -112,6 +173,7 @@ public:
             : s_flag(sflag)
             , l_flag(lflag) {
         setConfs(std::forward<Confs>(confs)...);
+        addToRegistry();
     }
 
     template<std::derived_from<ArgConf>... Confs>
@@ -122,8 +184,28 @@ public:
     Arg(std::string_view lflag, Confs &&...confs)
             : Arg(0, lflag, std::forward<Confs>(confs)...) { }
 
+    template<std::derived_from<ArgConf>... Confs>
+    Arg(Positional, Confs &&...confs)
+            : Arg(0, "", std::forward<Confs>(confs)...) { }
+
     operator T() {
-        return data;
+        if constexpr (std::is_same_v<T, bool> || is_optional_v<T>)
+            return data;
+        else
+            return data.value();
+    }
+
+    bool verify() {
+        // TODO(dk949): custom verifier support
+        if constexpr (std::is_same_v<T, bool> || is_optional_v<T>) {
+            return true;
+        } else {
+            return data.has_value();
+        }
+    }
+
+    bool isPositional() {
+        return s_flag == 0 && l_flag.empty();
     }
 private:
     template<std::derived_from<ArgConf>... Confs>
@@ -135,14 +217,41 @@ private:
                 help = conf;
             else if constexpr (std::is_same_v<D, Metavar>)
                 metavar = conf;
+            else if constexpr (is_default_v<D>)
+                data = conf.def;
+
 
             return true;
         }(confs) && ...);
     }
+
+    void addToRegistry() {
+        RegEntryKey key {s_flag, l_flag};
+        RegEntry entry {.parse = [&](ParseMode mode,
+                                     int total_argc,
+                                     int &current_argc,
+                                     char **&current_argv,
+                                     char short_mode_char,
+                                     bool short_mode_last_in_group) -> std::optional<ParseError> {
+            if constexpr (std::is_same_v<T, bool>) {
+                switch (mode) {
+                    case ParseMode::Short:
+                    case ParseMode::Long: data = true; return std::nullopt;
+                    case ParseMode::Positional:
+                        return ParseError {ParseErrorKind::Internal, "bool args cannot be positional"};
+                }
+            }
+            return ParseError {ParseErrorKind::Internal, "not implemented"};
+        },
+            .verify = [&]() {
+            return verify();
+        }};
+        ParentRegHolder::addToRegistry(key, entry);
+    }
 };
 
-#define UT_ARGS(name, ...) struct name : private RegistryHolder<#name __VA_OPT__(, RegistryHolder<#__VA_ARGS__>)>
-#define UT_ARG(T)          Arg<T, ThisParser>
+#define UT_ARGS(name, ...) struct name : RegistryHolder<name __VA_OPT__(, __VA_ARGS__)>
+#define UT_ARG(T)          static inline Arg<T, ThisParser>
 
 
 #endif  // UT_SWITCHBOARD_HPP
