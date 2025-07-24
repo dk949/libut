@@ -1,10 +1,12 @@
 //  NOLINTBEGIN(readability-magic-numbers,google-build-using-namespace)
 #include <ut/mt_queue/mt_queue.hpp>
+#include <ut/overload/overload.hpp>
 
 #include <barrier>
 #include <chrono>
 #include <numeric>
 #include <thread>
+#include <utility>
 namespace chr = std::chrono;
 using namespace std::chrono_literals;
 
@@ -68,6 +70,23 @@ TEMPLATE_TEST_CASE("Single threaded", "[mt_queue]", std::queue<int>, std::deque<
         REQUIRE(chr::high_resolution_clock::now() - now < 50ms);
         REQUIRE(p.has_value());
         REQUIRE(*p == 7);
+    }
+
+    SECTION("underLock") {
+        q.underLock([](auto &inner) {
+            ut::Overload {
+                [&](std::queue<int> &inner_q) { inner_q.push(10); },
+                [&](std::deque<int> &inner_q) { inner_q.push_back(10); },
+                [&](std::priority_queue<int> &inner_q) { inner_q.push(10); },
+            }(inner);
+            auto back = ut::Overload {
+                [&](std::queue<int> &inner_q) { return inner_q.back(); },
+                [&](std::deque<int> &inner_q) { return inner_q.back(); },
+                [&](std::priority_queue<int> &inner_q) { return inner_q.top(); },
+            }(inner);
+            REQUIRE(back == 10);
+        });
+        std::as_const(q).underLock([](auto &inner) { REQUIRE(!inner.empty()); });
     }
 }
 

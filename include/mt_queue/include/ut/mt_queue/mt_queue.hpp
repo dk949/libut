@@ -1,6 +1,7 @@
 #ifndef UT_MT_QUEUE_HPP
 #define UT_MT_QUEUE_HPP
 
+#include <type_traits>
 #if __cplusplus < 202'002L
 #    error this file has to be compiled with at least C++20
 #endif
@@ -174,18 +175,40 @@ public:
         std::lock_guard<std::mutex> g {m_mu};
         return m_q.empty();
     }
+
+    /**
+     * Access internal queue under a mutex lock.
+     *
+     * Allows performing multiple operations on a queue atomically
+     */
+    template<typename Fn>
+    auto underLock(Fn &&fn) {
+        std::lock_guard<std::mutex> g {m_mu};
+        return fn(m_q);
+    }
+
+    /**
+     * Access internal queue under a mutex lock.
+     *
+     * Allows performing multiple operations on a queue atomically
+     */
+    template<typename Fn>
+    auto underLock(Fn &&fn) const {
+        std::lock_guard<std::mutex> g {m_mu};
+        return fn(m_q);
+    }
 private:
     mutable std::mutex m_mu;
     mutable std::condition_variable m_cv;
     Q m_q;
     static constexpr bool has_top = requires {
-        { m_q.top() } -> std::same_as<T const &>;
+        {m_q.top()}->std::same_as<T const &>;
     };
     static constexpr bool has_front = requires {
-        { m_q.front() } -> std::same_as<T const &>;
+        {m_q.front()}->std::same_as<T const &>;
     }
     || requires {
-        { m_q.front() } -> std::same_as<T &>;
+        {m_q.front()}->std::same_as<T &>;
     };
     static constexpr bool has_push = requires(T t) {
         m_q.push(t);
