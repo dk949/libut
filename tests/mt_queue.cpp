@@ -1,9 +1,11 @@
 //  NOLINTBEGIN(readability-magic-numbers,google-build-using-namespace)
+#include <catch2/catch_test_macros.hpp>
 #include <ut/mt_queue/mt_queue.hpp>
 #include <ut/overload/overload.hpp>
 
 #include <barrier>
 #include <chrono>
+#include <iostream>
 #include <numeric>
 #include <thread>
 #include <utility>
@@ -233,6 +235,37 @@ TEMPLATE_TEST_CASE("Single trheaded using shared_ptr",
     REQUIRE(q.empty());
     // pointer still valid after queue is empty
     REQUIRE(*front == 30);
+}
+
+TEMPLATE_TEST_CASE("2 threaded get mutex", "[mt_queue]", std::queue<int>, std::deque<int>, std::priority_queue<int>) {
+
+    MtQueue<int, TestType> q;
+
+    std::barrier b {2};
+    auto t1 = std::jthread([&q, &b]() {
+        b.arrive_and_wait();
+        auto &mu = q.unsafeGetMutex();
+        mu.lock();
+        std::this_thread::sleep_for(100ms);
+        ut::Overload {
+            [](std::queue<int> &inner_q) { inner_q.push(10); },
+            [](std::deque<int> &inner_q) { inner_q.push_back(10); },
+            [](std::priority_queue<int> &inner_q) { inner_q.push(10); },
+        }(q.unsafeGetQueue());
+        mu.unlock();
+    });
+    auto t2 = std::jthread([&q, &b]() {
+        b.arrive_and_wait();
+        std::this_thread::sleep_for(50ms);
+        q.push(9);
+    });
+
+    t1.join();
+    t2.join();
+    REQUIRE(q.front() == 10);
+    REQUIRE(q.pop() == 10);
+    REQUIRE(q.front() == 9);
+    REQUIRE(q.pop() == 9);
 }
 
 //  NOLINTEND(readability-magic-numbers,google-build-using-namespace)

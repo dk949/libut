@@ -197,6 +197,51 @@ public:
         std::lock_guard<std::mutex> g {m_mu};
         return fn(m_q);
     }
+
+    /**
+     * Returns mutable reference to the internal mutex
+     *
+     * This function should almost never be used! Using the mutex directly can lead to deadlocks.
+     * 
+     * !!!!!!!!WARNING!!!!!!!!
+     * Locking the mutex, then calling any non-`unsafe` member function in the same thread *WILL* lead to a deadlock!
+     *
+     * To perform multiple operations atomically on the underlying queue, prefer `underLock`
+     */
+    [[nodiscard]]
+    std::mutex &unsafeGetMutex() const {
+        return m_mu;
+    }
+
+    /**
+     * Returns a reference to the internal queue.
+     *
+     * This function should almost never be used! Accessing the queue directly can lead to data-races.
+     *
+     * In order to safely access the underlying queue in a multithreaded environment, first lock the mutex,
+     * returned from `unsafeGetMutex`, or use one of the non-`unsafe` functions instead of directly
+     * manipulating the queue.
+     */
+    [[nodiscard]]
+    Q &unsafeGetQueue() {
+        return m_q;
+    }
+
+    /**
+     * Returns a reference to the internal queue.
+     *
+     * This function should almost never be used! Accessing the queue directly can lead to data-races.
+     *
+     * In order to safely access the underlying queue in a multithreaded environment, first lock the mutex,
+     * returned from `unsafeGetMutex`, or use one of the non-`unsafe` functions instead of directly
+     * manipulating the queue.
+     */
+    [[nodiscard]]
+    Q const &unsafeGetQueue() const {
+        return m_q;
+    }
+
+
 private:
     mutable std::mutex m_mu;
     mutable std::condition_variable m_cv;
