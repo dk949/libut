@@ -1,6 +1,7 @@
 #ifndef UT_RESOURCE_HPP
 #define UT_RESOURCE_HPP
 
+#include <concepts>
 #if __cplusplus < 202'002L
 #    error this file has to be compiled with at least C++20
 #endif
@@ -139,6 +140,12 @@ public:
     [[nodiscard]] operator bool() const noexcept {
         return hasValue();
     }
+
+    /**
+     * If this is not deleted, it allows for a Resource -> bool -> int conversion
+     */
+    template<std::integral Int>
+    operator Int() const = delete;
 
     /**
      * Acquire  the resource.
