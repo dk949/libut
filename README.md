@@ -57,6 +57,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::pack_loops`: loop over variadic template parameters (either values or types)
 * `UT::asis`: Provides a more convenient way to work with different kinds of dynamically polymorphic values.
 * `UT::static_string`: compile time known string usable as a template parameter
+* `UT::breakpoint`: Portable(ish) breakpoint macros
 * `UT::mt_queue`: thread safe FIFO queue
 * `UT::curry`: create a curried function out of a regular function
 * `UT::defer`: a macro to defer execution until the scope ends

@@ -9,6 +9,7 @@ set(cxx_17_files
     ${CMAKE_CURRENT_SOURCE_DIR}/constexpr_hash.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/defer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pack_loops.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/breakpoint.cpp
 )
 set(cxx_20_files
     ${cxx_17_files}
