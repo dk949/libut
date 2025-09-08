@@ -39,7 +39,7 @@ TEST_CASE("Inheriting from exception", "[traced_error]") {
         INFO(trace);
         REQUIRE(!trace.empty());
         REQUIRE(t.what() == "Hello world"sv);
-    } catch (ut::TracedError const &t) {
+    } catch (ut::TracedError const &) {
         FAIL("This handler should never be entered");
     }
     try {
