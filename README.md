@@ -46,6 +46,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 * `UT::err`: convenient error type for use with std::expected
 * `UT::add_noexcept`: add the `noexcept` specifier to a function type
 * `UT::change_observer`: wrapper class that invokes callbacks when it's held value changes
+* `UT::traced_error`: an exception type that automatically stores a C++23 standard stacktrace
 * `UT::sv_to_num`: convert `std::string_view` to a number
 * `UT::copy_traits`: copy cvref qualifiers from one type to another
 * `UT::realloc_unique_ptr`: `realloc` functionality for `std::uniqur_ptr`

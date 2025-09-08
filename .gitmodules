@@ -55,3 +55,6 @@
 [submodule "include/breakpoint/include/ut/breakpoint"]
 	path = include/breakpoint/include/ut/breakpoint
 	url = https://gist.github.com/dk949/e36f1a7ecc9a8aff296ee6e76a06ba68
+[submodule "include/traced_error/include/ut/traced_error"]
+	path = include/traced_error/include/ut/traced_error
+	url = https://gist.github.com/dk949/392c55c65e3c4efb89c7b89bd4390ba4
