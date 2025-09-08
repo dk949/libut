@@ -2,6 +2,7 @@ include(compiler_warnings.cmake)
 find_package(Catch2 3 REQUIRED)
 include(CTest)
 include(Catch)
+include(CheckSourceCompiles)
 
 set(cxx_17_files
     ${CMAKE_CURRENT_SOURCE_DIR}/add_noexcept.cpp
@@ -35,6 +36,20 @@ set(cxx_23_files
     ${CMAKE_CURRENT_SOURCE_DIR}/traced_error.cpp
 )
 
+block(SCOPE_FOR VARIABLES)
+    if(MSVC)
+        set(CMAKE_REQUIRED_FLAGS /Zc:__cplusplus /std:c++latest)
+    else()
+        set(CMAKE_REQUIRED_FLAGS -std=c++23)
+    endif()
+    check_source_compiles(CXX "
+        int main(void){
+        static_assert(__cplusplus >= 202302L);
+        }
+    "
+    HAS_CXX_23)
+endblock()
+
 function(setup_target target)
     target_link_libraries(${target} PRIVATE UT::all)
     set_target_warnings(${target})
@@ -59,7 +74,11 @@ target_compile_features(libut_tests_23 PUBLIC cxx_std_23)
 
 setup_target(libut_tests_17)
 setup_target(libut_tests_20)
-setup_target(libut_tests_23)
-if(NOT MSVC)
-    target_link_libraries(libut_tests_23 PUBLIC stdc++exp)
+if(HAS_CXX_23)
+    setup_target(libut_tests_23)
+    if(NOT MSVC)
+        target_link_libraries(libut_tests_23 PUBLIC stdc++exp)
+    endif()
+else()
+    message(WARNING "${CMAKE_CXX_COMPILER} does not support C++23, tests will not run")
 endif()
