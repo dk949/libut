@@ -66,15 +66,16 @@ endfunction()
 
 add_executable(libut_tests_17 ${cxx_17_files})
 add_executable(libut_tests_20 ${cxx_20_files})
-add_executable(libut_tests_23 ${cxx_23_files})
 
 target_compile_features(libut_tests_17 PUBLIC cxx_std_17)
 target_compile_features(libut_tests_20 PUBLIC cxx_std_20)
-target_compile_features(libut_tests_23 PUBLIC cxx_std_23)
 
 setup_target(libut_tests_17)
 setup_target(libut_tests_20)
+
 if(HAS_CXX_23)
+    add_executable(libut_tests_23 ${cxx_23_files})
+    target_compile_features(libut_tests_23 PUBLIC cxx_std_23)
     setup_target(libut_tests_23)
     if(NOT MSVC)
         target_link_libraries(libut_tests_23 PUBLIC stdc++exp)
