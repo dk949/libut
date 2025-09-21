@@ -2,12 +2,23 @@
 
 import re
 import sys
-from typing import Any
+from typing import Any, TypedDict, cast
 import urllib.parse
 from urllib.request import Request, urlopen
 import json
 from pathlib import Path
 import subprocess as sp
+
+
+class GHFile(TypedDict):
+    language: str | None
+    raw_url: str
+
+
+class Gist(TypedDict):
+    html_url: str
+    files: dict[str, GHFile]
+
 
 REPO_BASE = Path(__file__).parent.parent
 INCLUDE = REPO_BASE / "include"
@@ -30,26 +41,13 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64)"
 
 
 def populate_cmake_template(name: str, dir: Path):
-    file_list = "\n        ".join(
+    file_list = " ".join(
         f"${{CMAKE_CURRENT_SOURCE_DIR}}/{h.relative_to(dir)}"
         for h in (INCLUDE / name / "include" / "ut" / name).iterdir()
         if h.is_file() and h.suffix == ".hpp"
     )
 
-    return f"""cmake_minimum_required(VERSION 3.21)
-project(libut LANGUAGES CXX)
-
-add_library(libut_target_{name} INTERFACE)
-target_sources(libut_target_{name} PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS ${{CMAKE_CURRENT_SOURCE_DIR}}/include
-    FILES
-        {file_list}
-)
-
-message(STATUS "libut: adding UT::{name}")
-add_library(UT::{name} ALIAS libut_target_{name})
-    """
+    return f"libut_define_target({name} {file_list})"
 
 
 def add_params(url: str, params: dict[str, Any]) -> str:
@@ -69,7 +67,10 @@ def make_request(endpoint: str, params: dict[str, Any] | None = None) -> Request
 
 
 def get_page(
-    endpoint: str, params: dict[str, Any] | None = None, *, as_json=True
+    endpoint: str,
+    params: dict[str, Any] | None = None,
+    *,
+    as_json=True,
 ) -> Any:
     req = make_request(endpoint, params)
     with urlopen(req) as response:
@@ -84,25 +85,25 @@ def read_remote_file(url: str) -> str:
         return response.read().decode("utf-8")
 
 
-def list_gists():
+def list_gists() -> list[Gist]:
     # with open("save.json", "r") as j:
     #     return json.load(j)
-    gists = get_page("gists", {"per_page": 50}, as_json=True)
-    return gists
+    return cast(list[Gist], get_page("gists", {"per_page": 50}, as_json=True))
 
 
-def is_new_libut_gist(gist: dict[str, Any], file_list: list[str]) -> str | None:
+def is_new_libut_gist(gist: Gist, file_list: list[str]) -> tuple[str | None, bool]:
     if "files" not in gist:
         raise RuntimeError(f"Gist does not follow the schema\n{gist}")
-    files: dict[str, dict[str, Any]] = gist["files"]
+    files: dict[str, GHFile] = gist["files"]
     files = dict(filter(lambda file: file[1].get("language") == "C++", files.items()))
     # no C++ files
     if not files:
-        return None
+        return None, False
 
-    # gist is not new
-    if all(map(lambda file: file in file_list, files.keys())):
-        return None
+    for file in files.keys():
+        if file in file_list and file.endswith(".hpp"):
+            # gist is not new, but exists
+            return str(Path(file).with_suffix("")), False
 
     for name, info in files.items():
         if not name.endswith(".hpp"):
@@ -111,8 +112,8 @@ def is_new_libut_gist(gist: dict[str, Any], file_list: list[str]) -> str | None:
             raise RuntimeError(f"Gist does not follow the schema\n{gist}")
         contents = read_remote_file(info["raw_url"])
         if contents.startswith("#ifndef UT_"):
-            return str(Path(name).with_suffix(""))
-    return None
+            return str(Path(name).with_suffix("")), True
+    return None, False
 
 
 def tab(s: str):
@@ -139,8 +140,8 @@ def pull(path: Path):
     )
 
 
-def pull_cloned_gists():
-    file_list = []
+def pull_cloned_gists() -> list[str]:
+    file_list = list[str]()
 
     for d in INCLUDE.iterdir():
         repo = d / "include" / "ut" / d.name
@@ -220,13 +221,13 @@ def main() -> int:
     for gist in available_gists:
         if "html_url" not in gist:
             raise RuntimeError(f"Gist does not follow the schema\n{gist}")
-        name = is_new_libut_gist(gist, file_list)
-        if not name:
-            continue
-        if not add(gist["html_url"], name):
-            code = 1
-            continue
-        write_cmake(name)
+        name, is_new = is_new_libut_gist(gist, file_list)
+        if name is not None:
+            if is_new:
+                if not add(gist["html_url"], name):
+                    code = 1
+                    continue
+            _ = write_cmake(name)
     if code:
         print("Something went wrong")
         return code
