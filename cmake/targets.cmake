@@ -7,8 +7,8 @@ macro (libut_define_target name)
                FILES ${ARGN}
     )
 
-    target_include_directories(
-        ${name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
-    )
+    # target_include_directories(
+    #     ${name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
+    # )
     message(STATUS "libut: adding ${name}")
 endmacro ()
