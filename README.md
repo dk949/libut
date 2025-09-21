@@ -2,7 +2,7 @@
 
 [![CMake build and test](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/dk949/libut/actions/workflows/cmake-multi-platform.yml)
 
-    Various useful bits of c++
+    Various useful bits of C++
 
 This is header only C++ library for doing useful things. Such as printing human
 readable type names, converting `string_view`s to numbers. See the [Currently
@@ -67,7 +67,7 @@ target_link_libraries(MY_TARGET UT::target_name)
 
 <!-- AUTOGEN_END -->
 
-A special target `UT::all` is also available, combining all of the above.
+A special target `UT::ut` is also available, combining all of the above.
 
 ## Testing
 

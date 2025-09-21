@@ -54,7 +54,7 @@ check_source_compiles(
 endblock()
 
 function (setup_target target)
-    target_link_libraries(${target} PRIVATE UT::all)
+    target_link_libraries(${target} PRIVATE ut)
     set_target_warnings(${target})
     target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)
     target_precompile_headers(${target} PRIVATE <catch.hpp>)
