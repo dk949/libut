@@ -1,4 +1,4 @@
 @PACKAGE_INIT@
 
 # Let the config file find the targets file installed by install(EXPORT)
-include("${CMAKE_CURRENT_LIST_DIR}/UTTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/utTargets.cmake")
