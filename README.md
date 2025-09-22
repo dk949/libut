@@ -70,6 +70,35 @@ target_link_libraries(MY_TARGET ut::target_name)
 
 A special target `ut::ut` is also available, combining all of the above.
 
+### Using with `find_package`
+
+If you prefer, you can install the library and import it into a project via
+`find_package` like so:
+
+
+```sh
+git clone github.com/dk949/libut
+cd libut
+# use cmake --list-presets for a list of available presets
+cmake --preset local -DCMAKE_INSTALL_PREFIX=./libut-install
+cmake --install build
+```
+
+Then in your cmake file:
+
+```cmake
+set(ENV{ut_DIR} /path/to/libut/libut-install)
+find_package(ut REQUIRED)
+target_link_libraries(MY_TARGET ut::ut_target_name)
+```
+
+> [!NOTE]
+> When using find_package, all target names above (except ut::ut) are prefixed
+> with`ut_`.
+>
+> The prefixed targets are also available when using `FetchContent`, so for
+> a config that could use either, use the prefixed targets.
+
 ## Testing
 
 Test can be ran using Catch2
