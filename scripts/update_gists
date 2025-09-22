@@ -176,7 +176,7 @@ def write_cmake(name: str):
     if cmake_file.exists():
         print("file", cmake_file, "already exists", file=sys.stderr)
         return False
-    print(f"Generating CMake file for target UT::{name}")
+    print(f"Generating CMake file for target ut::{name}")
     with open(cmake_file, "w") as f:
         f.write(populate_cmake_template(name, cmake_file.parent))
 
@@ -202,7 +202,7 @@ def update_readme():
     repl = (
         [r"\1"]
         + [
-            f"* `UT::{name.name}`: {get_desc(name)}"
+            f"* `ut::{name.name}`: {get_desc(name)}"
             for name in INCLUDE.iterdir()
             if name.is_dir()
         ]

@@ -1,14 +1,17 @@
 macro (libut_define_target name)
-    add_library(${name} INTERFACE)
+    add_library(ut_${name} INTERFACE)
     target_sources(
-        ${name}
+        ut_${name}
         PUBLIC FILE_SET HEADERS #
                BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include #
                FILES ${ARGN}
     )
+    if (NOT TARGET ut::${name})
+        add_library(ut::${name} ALIAS ut_${name})
+    endif ()
 
-    # target_include_directories(
-    #     ${name} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
-    # )
-    message(STATUS "libut: adding ${name}")
+    if (NOT TARGET ut::ut_${name})
+        add_library(ut::ut_${name} ALIAS ut_${name})
+    endif ()
+    message(STATUS "libut: adding ut::${name}")
 endmacro ()

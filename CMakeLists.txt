@@ -15,15 +15,18 @@ add_library(ut INTERFACE)
 foreach (include ${includes})
     add_subdirectory("${include}")
     cmake_path(GET include FILENAME module_name)
-    target_link_libraries(ut INTERFACE "${module_name}")
-    list(APPEND LIBUT_TARGET_LIST "${module_name}")
+    target_link_libraries(ut INTERFACE ut_${module_name})
+    list(APPEND LIBUT_TARGET_LIST ut_${module_name})
 endforeach ()
+if (NOT TARGET ut::ut)
+    add_library(ut::ut ALIAS ut)
+endif ()
 list(APPEND LIBUT_TARGET_LIST ut)
 set(LIBUT_TARGET_LIST
     "${LIBUT_TARGET_LIST}"
     CACHE INTERNAL "" FORCE
 )
-message(STATUS "libut: adding UT::ut")
+message(STATUS "libut: adding ut::ut")
 libut_install()
 
 if (PROJECT_IS_TOP_LEVEL)
