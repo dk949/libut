@@ -57,7 +57,7 @@ target_link_libraries(MY_TARGET ut::target_name)
 * `ut::trim`: trim characters from start and end of a `std::string_view`
 * `ut::pack_loops`: loop over variadic template parameters (either values or types)
 * `ut::asis`: Provides a more convenient way to work with different kinds of dynamically polymorphic values.
-* `UT::static_string`: compile time known string usable as a template parameter
+* `ut::spawn`: simple process spawning (currently Linux only)
 * `ut::static_string`: compile time known string usable as a template parameter
 * `ut::breakpoint`: Portable(ish) breakpoint macros
 * `ut::mt_queue`: thread safe FIFO queue

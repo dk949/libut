@@ -22,6 +22,7 @@ set(cxx_20_files
     ${CMAKE_CURRENT_SOURCE_DIR}/pair.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ptrvecview.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resource.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/spawn.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/static_string.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sv_to_num.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/template_helpers.cpp
