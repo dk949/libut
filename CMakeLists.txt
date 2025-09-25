@@ -24,7 +24,6 @@ endif ()
 list(APPEND LIBUT_TARGET_LIST ut)
 set(LIBUT_TARGET_LIST
     "${LIBUT_TARGET_LIST}"
-    CACHE INTERNAL "" FORCE
 )
 message(STATUS "libut: adding ut::ut")
 libut_install()
