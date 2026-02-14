@@ -224,6 +224,63 @@ TEST_CASE("resource move ctor", "[resource]") {
     }
 }
 
+TEST_CASE("resource move operator=", "[resource]") {
+    struct ReleaseVal {
+        ReleaseVal(int *r)
+                : released(r) { }
+
+        ReleaseVal() = default;
+
+        ReleaseVal(ReleaseVal const &) = delete;
+        ReleaseVal(ReleaseVal &&) = default;
+        ReleaseVal &operator=(ReleaseVal const &) = delete;
+        ReleaseVal &operator=(ReleaseVal &&) = default;
+        ~ReleaseVal() = default;
+        int *released = nullptr;
+
+        void operator()(int) {
+            REQUIRE(!*released);
+            (*released)++;
+        }
+    };
+
+    struct ReleasePtr {
+        ReleasePtr(int *r)
+                : released(r) { }
+
+        ReleasePtr() = default;
+
+        int *released = nullptr;
+
+        void operator()(int *) {
+            REQUIRE(!*released);
+            (*released)++;
+        }
+    };
+
+    int v = 0;
+    SECTION("value") {
+        int released = 0;
+        {
+            ReleaseVal r {&released};
+            ut::Resource<int, ReleaseVal> val1 {v, std::move(r)};
+            ut::Resource<int, ReleaseVal> val2;
+            val2 = std::move(val1);
+        }
+        REQUIRE(released == 1);
+    }
+    SECTION("pointer") {
+        int released;
+        ReleasePtr r {&released};
+        {
+            ut::Resource<int *, ReleasePtr> val1 {&v, std::ref(r)};
+            ut::Resource<int *, ReleasePtr> val2;
+            val2 = std::move(val1);
+        }
+        REQUIRE(released == 1);
+    }
+}
+
 TEST_CASE("resource malloced", "[resource]") {
     {
         [[maybe_unused]]

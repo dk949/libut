@@ -2,6 +2,7 @@
 #define UT_RESOURCE_HPP
 
 #include <concepts>
+#include <utility>
 #if __cplusplus < 202'002L
 #    error this file has to be compiled with at least C++20
 #endif
@@ -85,8 +86,9 @@ private:
 
 public:
     template<typename Tt, typename Dd>
-    Resource(Tt &&data, Dd &&destructor) noexcept(std::is_nothrow_constructible_v<T, Tt &&>  //
-                                                  && std::is_nothrow_constructible_v<D, Dd &&>)
+    Resource(Tt &&data, Dd &&destructor) noexcept(std::is_nothrow_constructible_v<T, Tt &&>      //
+                                                  && std::is_nothrow_constructible_v<D, Dd &&>)  //
+        requires(std::is_constructible_v<D, Dd> &&std::is_constructible_v<T, Tt>)
             : m_data(std::forward<Tt>(data))
             , m_destructor(std::forward<Dd>(destructor)) { }
 
@@ -120,11 +122,12 @@ public:
 
     Resource &operator=(Resource &&other) noexcept(
         std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_assignable_v<D>) {
-        if (this == &other) return this;
-        release();
-        m_data = std::move(other.m_data);
-        m_destructor = std::move(other.m_destructor);
-        other.m_data = nullValueOf<T>();
+        if (this != &other) {
+            release();
+            std::swap(m_data, other.m_data);
+            std::swap(m_destructor, other.m_destructor);
+        }
+        return *this;
     }
 
     ~Resource() noexcept(noexcept(release())) {
@@ -137,7 +140,8 @@ public:
         return !isNull<T>(m_data);
     }
 
-    [[nodiscard]] operator bool() const noexcept {
+    [[nodiscard]]
+    operator bool() const noexcept {
         return hasValue();
     }
 
@@ -225,6 +229,14 @@ public:
     [[nodiscard]]
     std::conditional_t<needs_internal_mutability, PointerOf<T>, ConstPointerOf<T>> operator->() const noexcept {
         return operatorArrow<T>(m_data);
+    }
+
+    D const &getDeleter() const {
+        return m_destructor;
+    }
+
+    D &getDeleter() {
+        return m_destructor;
     }
 };
 
