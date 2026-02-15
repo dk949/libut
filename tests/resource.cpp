@@ -270,7 +270,7 @@ TEST_CASE("resource move operator=", "[resource]") {
         REQUIRE(released == 1);
     }
     SECTION("pointer") {
-        int released;
+        int released = 0;
         ReleasePtr r {&released};
         {
             ut::Resource<int *, ReleasePtr> val1 {&v, std::ref(r)};
