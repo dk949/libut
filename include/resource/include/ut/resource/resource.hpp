@@ -275,7 +275,7 @@ Resource(Dd &&destructor)
 
 template<typename T>
 auto malloced(T *t) {
-    return Resource(t, [](auto *ptr) { free(ptr); });
+    return Resource(t, [](auto *ptr) noexcept { free(ptr); });
 }
 
 }  // namespace ut
