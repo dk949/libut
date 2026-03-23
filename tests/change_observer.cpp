@@ -25,7 +25,7 @@ struct NoMove {
     int x = 3, y = 4;
     NoMove() = default;
 
-    NoMove(int xx, int yy)
+    NoMove(int xx, int yy) noexcept
             : x(xx)
             , y(yy) { }
 
@@ -35,11 +35,11 @@ struct NoMove {
     NoMove &operator=(NoMove &&) = delete;
     ~NoMove() = default;
 
-    int getX() const {
+    int getX() const noexcept {
         return x;
     }
 
-    void setX(int xx) {
+    void setX(int xx) noexcept {
         x = xx;
     }
 };
@@ -49,7 +49,7 @@ struct NoCopy {
 
     bool operator==(NoCopy const &) const = default;
 
-    NoCopy(float xx, float yy)
+    NoCopy(float xx, float yy) noexcept
             : x(xx)
             , y(yy) { }
 
@@ -60,104 +60,104 @@ struct NoCopy {
     NoCopy &operator=(NoCopy &&) = default;
     ~NoCopy() = default;
 
-    float getX() const {
+    float getX() const noexcept {
         return x;
     }
 
-    void setX(float xx) {
+    void setX(float xx) noexcept {
         x = xx;
     }
 };
 
 template<typename T>
-T getValue();
+T getValue() noexcept;
 
 template<>
-int getValue<int>() {
+int getValue<int>() noexcept {
     return 43;
 }
 
 template<>
-Simple getValue<Simple>() {
+Simple getValue<Simple>() noexcept {
     return Simple {42, 42.f, "42"};
 }
 
 template<>
-NoMove getValue<NoMove>() {
+NoMove getValue<NoMove>() noexcept {
     return {7, 10};
 }
 
 template<>
-NoCopy getValue<NoCopy>() {
+NoCopy getValue<NoCopy>() noexcept {
     return {1, 2};
 }
 
 template<typename T>
-T getDefaultValue();
+T getDefaultValue() noexcept;
 
 template<>
-int getDefaultValue<int>() {
+int getDefaultValue<int>() noexcept {
     return 0;
 }
 
 template<>
-Simple getDefaultValue<Simple>() {
+Simple getDefaultValue<Simple>() noexcept {
     return Simple {1, 2.2f, "three"};
 }
 
 template<>
-NoMove getDefaultValue<NoMove>() {
+NoMove getDefaultValue<NoMove>() noexcept {
     return {3, 4};
 }
 
 template<>
-NoCopy getDefaultValue<NoCopy>() {
+NoCopy getDefaultValue<NoCopy>() noexcept {
     return {10.7f, 15.9f};
 }
 
 template<typename T>
-T getSimilarValue();
+T getSimilarValue() noexcept;
 
 template<>
-int getSimilarValue<int>() {
+int getSimilarValue<int>() noexcept {
     return 45;
 }
 
 template<>
-Simple getSimilarValue<Simple>() {
+Simple getSimilarValue<Simple>() noexcept {
     return Simple {42, 43.f, "44"};
 }
 
 template<>
-NoMove getSimilarValue<NoMove>() {
+NoMove getSimilarValue<NoMove>() noexcept {
     return {7, 11};
 }
 
 template<>
-NoCopy getSimilarValue<NoCopy>() {
+NoCopy getSimilarValue<NoCopy>() noexcept {
     return {1, 3};
 }
 
 template<typename T>
-bool compare(T const &a, T const &b);
+bool compare(T const &a, T const &b) noexcept;
 
 template<>
-bool compare<int>(int const &a, int const &b) {
+bool compare<int>(int const &a, int const &b) noexcept {
     return a == b;
 }
 
 template<>
-bool compare<Simple>(Simple const &a, Simple const &b) {
+bool compare<Simple>(Simple const &a, Simple const &b) noexcept {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 template<>
-bool compare<NoMove>(NoMove const &a, NoMove const &b) {
+bool compare<NoMove>(NoMove const &a, NoMove const &b) noexcept {
     return a.x == b.x && a.y == b.y;
 }
 
 template<>
-bool compare<NoCopy>(NoCopy const &a, NoCopy const &b) {
+bool compare<NoCopy>(NoCopy const &a, NoCopy const &b) noexcept {
     return a.x == b.x && a.y == b.y;
 }
 
@@ -166,58 +166,58 @@ struct CustomCompare;
 
 template<>
 struct CustomCompare<int> {
-    bool operator()(int a, int b) {
+    bool operator()(int a, int b) noexcept {
         return a % 2 == b % 2;
     }
 };
 
 template<>
 struct CustomCompare<Simple> {
-    bool operator()(Simple const &a, Simple const &b) {
+    bool operator()(Simple const &a, Simple const &b) noexcept {
         return a.x == b.x;
     }
 };
 
 template<>
 struct CustomCompare<NoMove> {
-    bool operator()(NoMove const &a, NoMove const &b) {
+    bool operator()(NoMove const &a, NoMove const &b) noexcept {
         return a.x == b.x;
     }
 };
 
 template<>
 struct CustomCompare<NoCopy> {
-    bool operator()(NoCopy const &a, NoCopy const &b) {
+    bool operator()(NoCopy const &a, NoCopy const &b) noexcept {
         return a.x == b.x;
     }
 };
 
 template<typename T>
-std::string toString(T const &);
+std::string toString(T const &) noexcept;
 
 template<>
-std::string toString<int>(int const &v) {
+std::string toString<int>(int const &v) noexcept {
     std::stringstream ss;
     ss << "int(" << v << ")";
     return ss.str();
 }
 
 template<>
-std::string toString<Simple>(Simple const &v) {
+std::string toString<Simple>(Simple const &v) noexcept {
     std::stringstream ss;
     ss << "Simple(" << v.x << ", " << v.y << ", " << v.z << ")";
     return ss.str();
 }
 
 template<>
-std::string toString<NoMove>(NoMove const &v) {
+std::string toString<NoMove>(NoMove const &v) noexcept {
     std::stringstream ss;
     ss << "NoMove(" << v.x << ", " << v.y << ")";
     return ss.str();
 }
 
 template<>
-std::string toString<NoCopy>(NoCopy const &v) {
+std::string toString<NoCopy>(NoCopy const &v) noexcept {
     std::stringstream ss;
     ss << "NoCopy(" << v.x << ", " << v.y << ")";
     return ss.str();
@@ -235,7 +235,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
         SECTION("Default ctor & update") {
             int changed = 0;
             Observer default_ctor;
-            default_ctor.onChange([&](auto &&...) { changed++; });
+            default_ctor.onChange([&](auto &&...) noexcept { changed++; });
             default_ctor.onChange([&](TestType const &v1, TestType const &v2) {
                 if (changed == 1) {
                     REQUIRE(compare(v1, getDefaultValue<TestType>()));
@@ -253,7 +253,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
         SECTION("Value ctor & Assignment") {
             int changed = 0;
             Observer value_ctor {getValue<TestType>()};
-            value_ctor.onChange([&](auto &&...) { changed++; });
+            value_ctor.onChange([&](auto &&...) noexcept { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
             if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -270,7 +270,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
                           && std::is_assignable_v<TestType, TestType>) {
                 int changed = 0;
                 Observer v;
-                v.onChange([&](auto &&...) { changed++; });
+                v.onChange([&](auto &&...) noexcept { changed++; });
                 v.getRef() = getValue<TestType>();
                 REQUIRE(changed == 1);
                 {
@@ -310,7 +310,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
             SECTION("Default ctor & update") {
                 int changed = 0;
                 Observer default_ctor;
-                default_ctor.onChange([&](auto &&...) { changed++; });
+                default_ctor.onChange([&](auto &&...) noexcept { changed++; });
                 default_ctor.onChange([&](TestType const &v1, TestType const &v2) {
                     if (changed == 1) {
                         REQUIRE(compare(v1, getDefaultValue<TestType>()));
@@ -328,7 +328,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
             SECTION("Value ctor & Assignment") {
                 int changed = 0;
                 Observer value_ctor {getValue<TestType>()};
-                value_ctor.onChange([&](auto &&...) { changed++; });
+                value_ctor.onChange([&](auto &&...) noexcept { changed++; });
                 Observer default_val;
                 Observer similar_val {getSimilarValue<TestType>()};
                 if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -346,7 +346,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
 
                     int changed = 0;
                     Observer v;
-                    v.onChange([&](auto &&...) { changed++; });
+                    v.onChange([&](auto &&...) noexcept { changed++; });
                     v.getRef() = getValue<TestType>();
                     REQUIRE(changed == 1);
                     {
@@ -384,7 +384,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
         SECTION("Default ctor & update") {
             int changed = 0;
             Observer default_ctor;
-            default_ctor.onChange([&](auto &&...) { changed++; });
+            default_ctor.onChange([&](auto &&...) noexcept { changed++; });
             default_ctor.onChange([&](TestType const &v1, TestType const &v2) {  //
                 switch (changed) {
                     case 1: {
@@ -412,7 +412,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
         SECTION("Value ctor & Assignment") {
             int changed = 0;
             Observer value_ctor {getValue<TestType>()};
-            value_ctor.onChange([&](auto &&...) { changed++; });
+            value_ctor.onChange([&](auto &&...) noexcept { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
             if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -430,7 +430,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::Yes",
 
                 int changed = 0;
                 Observer v;
-                v.onChange([&](auto &&...) { changed++; });
+                v.onChange([&](auto &&...) noexcept { changed++; });
                 v.getRef() = getValue<TestType>();
                 REQUIRE(changed == 1);
                 {
@@ -476,7 +476,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("Default ctor & update") {
             int changed = 0;
             Observer default_ctor;
-            default_ctor.onChange([&](auto &&...) { changed++; });
+            default_ctor.onChange([&](auto &&...) noexcept { changed++; });
             default_ctor.onChange([&](TestType const &v) {
                 REQUIRE(compare(v, getValue<TestType>()));
                 changed++;
@@ -489,7 +489,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("Value ctor & Assignment") {
             int changed = 0;
             Observer value_ctor {getValue<TestType>()};
-            value_ctor.onChange([&](auto &&...) { changed++; });
+            value_ctor.onChange([&](auto &&...) noexcept { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
             if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -504,7 +504,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("getRef & Proxy") {
             int changed = 0;
             Observer v;
-            v.onChange([&](auto &&...) { changed++; });
+            v.onChange([&](auto &&...) noexcept { changed++; });
             v.getRef() = getValue<TestType>();
             REQUIRE(changed == 1);
             {
@@ -543,7 +543,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
             SECTION("Default ctor & update") {
                 int changed = 0;
                 Observer default_ctor;
-                default_ctor.onChange([&](auto &&...) { changed++; });
+                default_ctor.onChange([&](auto &&...) noexcept { changed++; });
                 default_ctor.onChange([&](TestType const &v) {
                     if (changed != 1) {
                         FAIL("This should never happen: v = " << toString(v));
@@ -559,7 +559,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
             SECTION("Value ctor & Assignment") {
                 int changed = 0;
                 Observer value_ctor {getValue<TestType>()};
-                value_ctor.onChange([&](auto &&...) { changed++; });
+                value_ctor.onChange([&](auto &&...) noexcept { changed++; });
                 Observer default_val;
                 Observer similar_val {getSimilarValue<TestType>()};
                 if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -574,7 +574,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
             SECTION("getRef & Proxy") {
                 int changed = 0;
                 Observer v;
-                v.onChange([&](auto &&...) { changed++; });
+                v.onChange([&](auto &&...) noexcept { changed++; });
                 v.getRef() = getValue<TestType>();
                 REQUIRE(changed == 1);
                 {
@@ -611,7 +611,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("Default ctor & update") {
             int changed = 0;
             Observer default_ctor;
-            default_ctor.onChange([&](auto &&...) { changed++; });
+            default_ctor.onChange([&](auto &&...) noexcept { changed++; });
             default_ctor.onChange([&](TestType const &v) {  //
                 switch (changed) {
                     case 1: {
@@ -637,7 +637,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("Value ctor & Assignment") {
             int changed = 0;
             Observer value_ctor {getValue<TestType>()};
-            value_ctor.onChange([&](auto &&...) { changed++; });
+            value_ctor.onChange([&](auto &&...) noexcept { changed++; });
             Observer default_val;
             Observer similar_val {getSimilarValue<TestType>()};
             if constexpr (std::is_assignable_v<Observer, Observer const &>) {
@@ -652,7 +652,7 @@ TEMPLATE_TEST_CASE("Change observer KeepOldCopy::No",
         SECTION("getRef & Proxy") {
             int changed = 0;
             Observer v;
-            v.onChange([&](auto &&...) { changed++; });
+            v.onChange([&](auto &&...) noexcept { changed++; });
             v.getRef() = getValue<TestType>();
             REQUIRE(changed == 1);
             {

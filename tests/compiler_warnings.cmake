@@ -79,7 +79,7 @@ function (set_target_warnings project_name acc)
         -Wduplicated-branches # warn if if / else branches have duplicated code
         -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
         -Wuseless-cast # warn if you perform a cast to the same type
-        # -Wnoexcept # noextept(func()) is false, because func is not noexcept, but it can be
+        -Wnoexcept # noextept(func()) is false, because func is not noexcept, but it can be
         -Wunused-const-variable=1 # using level 1, because default (set above) also accounts for headers
     )
 
