@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <ut/resource/resource.hpp>
 
+#include <cstdlib>
+
 struct Res { };
 
 bool func_released = false;
@@ -294,6 +296,17 @@ TEST_CASE("resource malloced", "[resource]") {
         free(m.takeOwnership());
     }
     SUCCEED("No double free");
+
+    struct S { };
+
+    {
+        auto make_s = []() {
+            S *s = static_cast<S *>(malloc(sizeof(S)));
+            return s;
+        };
+        auto m = ut::malloced(make_s());
+    }
+    SUCCEED("No memeory leak");
 }
 
 TEST_CASE("default ctor", "[resource]") {

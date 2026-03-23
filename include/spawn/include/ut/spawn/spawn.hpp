@@ -244,6 +244,7 @@ private:
             case OutPipe::String:
                 if (pipe(pipes)) return -1;
                 return pipes[direction];
+            default:;
         }
         return -1;
     }

@@ -3,6 +3,7 @@ find_package(Catch2 3 REQUIRED)
 include(CTest)
 include(Catch)
 include(CheckSourceCompiles)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 set(cxx_17_files
     ${CMAKE_CURRENT_SOURCE_DIR}/add_noexcept.cpp #
@@ -56,7 +57,7 @@ endblock()
 
 function (setup_target target)
     target_link_libraries(${target} PRIVATE ut)
-    set_target_warnings(${target})
+    set_target_warnings(${target} PRIVATE)
     target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)
     target_precompile_headers(${target} PRIVATE <catch.hpp>)
     if (NOT MSVC)
