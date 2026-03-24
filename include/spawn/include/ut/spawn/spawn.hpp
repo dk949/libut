@@ -61,7 +61,7 @@ public:
     std::vector<char *> toPtrVec() {
         std::vector<char *> out;
         out.reserve(env.size() + 1);
-        std::transform(env.begin(), env.end(), std::back_inserter(out), [](std::string &s) { return s.data(); });
+        std::transform(env.begin(), env.end(), std::back_inserter(out), [](std::string &s) noexcept { return s.data(); });
         out.push_back(nullptr);
         return out;
     }
@@ -72,18 +72,18 @@ public:
     private:
         using Parent = std::conditional_t<is_const, Environ const *, Environ *>;
 
-        EnvironProxy(Parent p, std::string_view k)
+        EnvironProxy(Parent p, std::string_view k) noexcept
                 : parent(p)
                 , key(k) { }
 
         Parent parent;
         std::string_view key;
 
-        std::pair<std::vector<std::string>::iterator, std::string::size_type> find() const {
+        std::pair<std::vector<std::string>::iterator, std::string::size_type> find() const noexcept {
             auto actual_split = std::string::npos;
             return {std::find_if(parent->env.begin(),
                         parent->env.end(),
-                        [&](std::string const &entry) {
+                        [&](std::string const &entry) noexcept {
                 auto split = entry.find('=');
                 assert(split != entry.npos);
                 if (std::string_view {entry}.substr(0, split) == key) {
@@ -104,18 +104,18 @@ public:
                 parent->env.push_back(std::format("{}={}", key, value));
         }
 
-        operator char const *() const {
+        operator char const *() const noexcept {
             auto [pos, split] = find();
             if (pos != parent->env.end()) return nullptr;
             return pos->c_str() + split + 1;
         }
     };
 
-    EnvironProxy<false> operator[](std::string_view key) {
+    EnvironProxy<false> operator[](std::string_view key) noexcept {
         return {this, key};
     }
 
-    EnvironProxy<true> operator[](std::string_view key) const {
+    EnvironProxy<true> operator[](std::string_view key) const noexcept {
         return {this, key};
     }
 };
@@ -183,22 +183,22 @@ private:
     std::optional<std::string> m_stderr;
 public:
     [[nodiscard]]
-    StopKind kind() const {
+    StopKind kind() const noexcept {
         return m_kind;
     }
 
     [[nodiscard]]
-    int code() const {
+    int code() const noexcept {
         return m_code;
     }
 
     [[nodiscard]]
-    std::optional<std::string> const &stdout() const {
+    std::optional<std::string> const &stdout() const noexcept {
         return m_stdout;
     }
 
     [[nodiscard]]
-    std::optional<std::string> const &stderr() const {
+    std::optional<std::string> const &stderr() const noexcept {
         return m_stderr;
     }
 };
@@ -233,11 +233,11 @@ private:
         return out;
     }
 
-    static int devNull() {
+    static int devNull() noexcept {
         return open("/dev/null", O_RDWR | O_CLOEXEC);
     }
 
-    static int setupPipe(int (&pipes)[2], OutPipe how, int direction) {
+    static int setupPipe(int (&pipes)[2], OutPipe how, int direction) noexcept {
         switch (how) {
             case OutPipe::Ignore: return 0;
             case OutPipe::DevNull: pipes[direction] = devNull(); return pipes[direction];
@@ -249,27 +249,27 @@ private:
         return -1;
     }
 
-    static int setupPipe(int (&pipes)[2], OutPipe how) {
+    static int setupPipe(int (&pipes)[2], OutPipe how) noexcept {
         return setupPipe(pipes, how, write_idx);
     }
 
-    static int setupPipe(int (&pipes)[2], std::variant<InPipe, std::string> const &how) {
+    static int setupPipe(int (&pipes)[2], std::variant<InPipe, std::string> const &how) noexcept {
         if (auto in_pipe = std::get_if<InPipe>(&how))
             return setupPipe(pipes, OutPipe(int(*in_pipe)), read_idx);
         else
             return setupPipe(pipes, OutPipe::String, read_idx);
     }
 
-    static int dupIf(int fd, int fd2) {
+    static int dupIf(int fd, int fd2) noexcept {
         if (fd >= 0 && fd2 >= 0) return dup2(fd, fd2);
         return 0;
     }
 
-    static void closeIf(int fd) {
+    static void closeIf(int fd) noexcept {
         if (fd >= 0) close(fd);
     }
 
-    static int writeToFd(int fd, std::variant<InPipe, std::string> const &v) {
+    static int writeToFd(int fd, std::variant<InPipe, std::string> const &v) noexcept {
         auto s = std::get_if<std::string>(&v);
         if (!s) return 0;
         std::string::const_pointer ptr = s->data();
@@ -370,12 +370,12 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<std::string> const &error() const {
+    std::optional<std::string> const &error() const noexcept {
         return m_error;
     }
 
     [[nodiscard]]
-    operator bool() const {
+    operator bool() const noexcept {
         return !(m_pid == -1 || m_error.has_value());
     }
 
@@ -433,13 +433,13 @@ namespace detail {
                                         || std::is_floating_point_v<D>;
 
     template<typename... Args>
-    consteval bool validateSpawnArgs() {
+    consteval bool validateSpawnArgs() noexcept {
         static_assert(sizeof...(Args), "spawn requires an argument");
         static_assert(!(sizeof...(Args) == 1 && std::conjunction_v<std::is_same<std::decay_t<Args>, SpawnConfig>...>),
             "SpawnConfig cannot be the only argument to spawn");
         if (sizeof...(Args) == 0) return false;
-        return []<std::size_t... i>(std::index_sequence<i...>) {
-            return ([]() {
+        return []<std::size_t... i>(std::index_sequence<i...>) noexcept {
+            return ([]() noexcept {
                 if (is_spawn_arg_v<Args>) return true;
                 if (i && i + 1 == sizeof...(i) && std::is_same_v<std::decay_t<Args>, SpawnConfig>) return true;
                 return false;
@@ -462,7 +462,7 @@ namespace detail {
 
 inline RunningProcess spawn(char **args, SpawnConfig const &conf = {}) {
     if (conf.env) {
-        auto const fn = [&]() {
+        auto const fn = [&]() noexcept {
             if (conf.path_lookup)
                 return execvpe;
             else
@@ -474,13 +474,13 @@ inline RunningProcess spawn(char **args, SpawnConfig const &conf = {}) {
             fn(args[0], args, env_ptr.data());
         }, conf);
     } else {
-        auto const fn = [&]() {
+        auto const fn = [&]() noexcept {
             if (conf.path_lookup)
                 return execvp;
             else
                 return execv;
         }();
-        return RunningProcess::spawnWith([&]() { fn(args[0], args); }, conf);
+        return RunningProcess::spawnWith([&]() noexcept { fn(args[0], args); }, conf);
     }
 }
 
@@ -492,7 +492,7 @@ inline RunningProcess spawn(std::vector<char *> args, SpawnConfig const &conf = 
 inline RunningProcess spawn(std::vector<std::string> args, SpawnConfig const &conf = {}) {
     std::vector<char *> v;
     v.reserve(args.size());
-    std::transform(args.begin(), args.end(), std::back_inserter(v), [](std::string &s) { return s.data(); });
+    std::transform(args.begin(), args.end(), std::back_inserter(v), [](std::string &s) noexcept { return s.data(); });
     return spawn(std::move(v), conf);
 }
 
@@ -514,7 +514,7 @@ namespace detail {
         static constexpr auto is_last_config =
             std::is_same_v<std::decay_t<std::tuple_element_t<sizeof...(Args) - 1, std::tuple<Args...>>>, SpawnConfig>;
 
-        SpawnConfig cfg = [&]() {
+        SpawnConfig cfg = [&]() noexcept((std::is_move_constructible_v<Args> &&...)) {
             if constexpr (is_last_config)
                 return std::move(std::get<sizeof...(Args) - 1>(args));
             else
