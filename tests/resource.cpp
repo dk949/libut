@@ -15,7 +15,7 @@ TEST_CASE("resource value initialisation", "[resource]") {
     SECTION("lambda") {
         bool released = false;
 
-        auto release_lambda = [&](Res) {
+        auto release_lambda = [&](Res) noexcept {
             released = true;
         };
 
@@ -33,7 +33,7 @@ TEST_CASE("resource delayed value initialisatoin", "[resource]") {
 
     bool released = false;
 
-    auto release_lambda = [&](Res) {
+    auto release_lambda = [&](Res) noexcept {
         released = true;
     };
     { ut::Resource<Res, decltype(release_lambda)> r {release_lambda}; }
@@ -48,7 +48,7 @@ TEST_CASE("resource delayed value initialisatoin", "[resource]") {
 TEST_CASE("resource ctad", "[resource]") {
     bool released = false;
 
-    auto release_lambda = [&](Res) {
+    auto release_lambda = [&](Res) noexcept {
         released = true;
     };
     SECTION("both arsg lambda") {
@@ -85,22 +85,22 @@ TEST_CASE("resource default destructor ctor", "[resource]") {
     released_ptr = false;
 
     {
-        ut::Resource<int, decltype([](int) { released_val = true; })> val {1};
+        ut::Resource<int, decltype([](int) noexcept { released_val = true; })> val {1};
     }
     REQUIRE(released_val);
 
     {
         int i;
-        ut::Resource<int *, decltype([](int *) { released_ptr = true; })> ptr {&i};
+        ut::Resource<int *, decltype([](int *) noexcept { released_ptr = true; })> ptr {&i};
     }
     REQUIRE(released_ptr);
 }
 
 TEST_CASE("resource hasValue", "[resource]") {
-    auto const release_value = [](int) {
+    auto const release_value = [](int) noexcept {
     };
 
-    auto const release_ptr = [](int const *) {
+    auto const release_ptr = [](int const *) noexcept {
     };
 
     ut::Resource<int, decltype(release_value)> val_empty {release_value};
@@ -126,9 +126,9 @@ TEST_CASE("resource hasValue", "[resource]") {
 }
 
 TEST_CASE("resource get", "[resource]") {
-    auto const release_value = [](int) {
+    auto const release_value = [](int) noexcept {
     };
-    auto const release_ptr = [](int const *) {
+    auto const release_ptr = [](int const *) noexcept {
     };
 
     int val = 23;
@@ -165,9 +165,9 @@ TEST_CASE("resource operator->", "[resource]") {
         int i;
     };
 
-    auto const release_value = [](S) {
+    auto const release_value = [](S) noexcept {
     };
-    auto const release_ptr = [](S const *) {
+    auto const release_ptr = [](S const *) noexcept {
     };
 
     S val {23};
@@ -312,7 +312,7 @@ TEST_CASE("resource malloced", "[resource]") {
 TEST_CASE("default ctor", "[resource]") {
     static int released = 0;
     {
-        ut::Resource<int, decltype([](int) { released++; })> res {};
+        ut::Resource<int, decltype([](int) noexcept { released++; })> res {};
         res.acquire(1);
     }
     REQUIRE(released == 1);
@@ -321,7 +321,7 @@ TEST_CASE("default ctor", "[resource]") {
 TEST_CASE("default constructable dtor + single arg ctor", "[resource]") {
     static int released = 0;
     {
-        ut::Resource<int, decltype([](int) { released++; })> res {1};
+        ut::Resource<int, decltype([](int) noexcept { released++; })> res {1};
     }
     REQUIRE(released == 1);
 }

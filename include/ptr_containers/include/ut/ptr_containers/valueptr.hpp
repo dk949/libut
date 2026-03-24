@@ -30,7 +30,7 @@ public:  ////////// constructors //////////
     }
 
     template<detail::DerivedOrEqualTo<T> U>
-    explicit ValuePtr(std::unique_ptr<U> obj) {
+    explicit ValuePtr(std::unique_ptr<U> obj) noexcept {
         m_obj = obj.release();
     }
 
@@ -91,11 +91,11 @@ public:  ////////// functions //////////
      * \note This API should rarely be used. To obtain a reference to the
      *       contained object use `operator*`
      */
-    T *get() {
+    T *get() noexcept {
         return m_obj;
     }
 
-    T const *get() const {
+    T const *get() const noexcept {
         return m_obj;
     }
 
@@ -112,26 +112,25 @@ public:  ////////// functions //////////
     }
 
 public:  ////////// operators //////////
-    T *operator->() {
+    T *operator->() noexcept{
         return m_obj;
     }
 
-    T const *operator->() const {
+    T const *operator->() const noexcept{
         return m_obj;
     }
 
-    T &operator*() {
+    T &operator*() noexcept{
         return *m_obj;
     }
 
-    T const &operator*() const {
+    T const &operator*() const noexcept{
         return *m_obj;
     }
 
 private:
     template<typename U>
     using OpRetT = std::conditional_t<detail::DerivedOrEqualTo<U, T>, ValuePtr, U>;
-#define UT_OP_RET(op) OpRetT<decltype(*m_obj op std::declval<U>())>
 
 public:
 
@@ -155,7 +154,6 @@ public:
         return OpRetT<std::invoke_result_t<T, Args...>> {(*m_obj)(std::forward<Args>(args)...)};
     }
 
-#undef UT_OP_RET
 };
 
 template<typename T>

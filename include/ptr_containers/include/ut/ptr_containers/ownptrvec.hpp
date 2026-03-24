@@ -1,6 +1,7 @@
 #ifndef OWNPTRVEC_HPP
 #define OWNPTRVEC_HPP
 
+#include <type_traits>
 #if __cplusplus < 202'002L
 #    error this file has to be compiled with at least C++20
 #endif
@@ -9,10 +10,6 @@
 #include "ptrvecview.hpp"
 #include "template_helpers.hpp"
 
-#ifndef assert
-#    include <cassert>
-#endif
-#include <cstddef>
 #include <cstring>
 #include <memory>
 #include <stack>
@@ -20,7 +17,7 @@
 
 namespace ut {
 
-#define BASE                             \
+#define UT_DETAIL_BASE                   \
     ContainerBase<T,                     \
         /*ValueType      = */ T,         \
         /*StorageType    = */ T **,      \
@@ -30,8 +27,8 @@ namespace ut {
         /*ConstIterator  = */ T *const *>
 
 template<typename T>
-class OwnPtrVec : public BASE {
-    using Base = BASE;
+class OwnPtrVec : public UT_DETAIL_BASE {
+    using Base = UT_DETAIL_BASE;
 
     UT_CONTAINER_BASE_INJECT_DEPENDANT_NAMES(Base);
 
@@ -54,7 +51,7 @@ public:  ////////// constructors //////////
         return vec;
     }
 
-    OwnPtrVec() {
+    OwnPtrVec() noexcept {
         m_data = nullptr;
         m_size = 0;
         m_cap = 0;
@@ -63,14 +60,14 @@ public:  ////////// constructors //////////
     OwnPtrVec(OwnPtrVec const &) = delete;
     OwnPtrVec &operator=(OwnPtrVec const &) = delete;
 
-    OwnPtrVec(OwnPtrVec &&other) {
+    OwnPtrVec(OwnPtrVec &&other) noexcept(std::is_move_assignable_v<OwnPtrVec>) {
         m_size = 0;
         m_cap = 0;
         m_data = nullptr;
         *this = std::move(other);
     }
 
-    OwnPtrVec &operator=(OwnPtrVec &&other) {
+    OwnPtrVec &operator=(OwnPtrVec &&other) noexcept(if_assert) {
         deleteData();
         std::swap(m_data, other.m_data);
         std::swap(m_size, other.m_size);
@@ -79,6 +76,7 @@ public:  ////////// constructors //////////
     }
 
     ~OwnPtrVec() {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
         static_assert(sizeof(T) >= 0, "Cannot have incomplete type in the constructor");
         deleteData();
     }
@@ -90,7 +88,9 @@ public:  ////////// constructors //////////
      *
      * NOTE: Use the PtrVecView constructor for an API that takes a starting index and a size
      */
-    PtrVecView<T> view(size_type from = 0, size_type to = npos) {
+    PtrVecView<T> view(size_type from = 0, size_type to = npos) noexcept(
+        if_assert
+        && std::is_nothrow_constructible_v<PtrVecView<T>, decltype(begin() + from), decltype((to == npos ? m_size : to) - from)>) {
         assert(from <= to);
         assert(from <= m_size);
         assert((to == npos || to <= m_size));
@@ -102,13 +102,14 @@ public:  ////////// constructors //////////
      * `from`: starting iterator (inclusive)
      * `to`: ending iterator (not inclusive)
      */
-    static PtrVecView<T> view(const_iterator from, const_iterator to) {
+    static PtrVecView<T> view(const_iterator from, const_iterator to) noexcept(
+        if_assert && std::is_nothrow_constructible_v<PtrVecView<T>, decltype(from), decltype(to)>) {
         assert(from <= to);
         return PtrVecView<T>(from, to);
     }
 
 private:
-    OwnPtrVec(T **d, size_type s, size_type c) {
+    OwnPtrVec(T **d, size_type s, size_type c) noexcept {
         m_data = d;
         m_size = s;
         m_cap = c;
@@ -134,7 +135,7 @@ public:  ////////// element access //////////
      *  be reset after the call.
      */
     [[nodiscard("returns owning pointer")]]
-    T **release() {
+    T **release() noexcept {
         auto **ptr = m_data;
         m_data = nullptr;
         m_size = 0;
@@ -144,7 +145,7 @@ public:  ////////// element access //////////
 
     /// Caller owns returned memory.
     [[nodiscard("object will be deleted at the end of the function call if not saved to temporary")]]
-    std::unique_ptr<T> release_back() {
+    std::unique_ptr<T> release_back() noexcept {
         return std::unique_ptr<T> {m_data[--m_size]};
     }
 
@@ -154,7 +155,7 @@ public:  ////////// capacity //////////
         changeCapacity(new_capacity);
     }
 
-    size_type capacity() const {
+    size_type capacity() const noexcept {
         return m_cap;
     }
 
@@ -163,7 +164,7 @@ public:  ////////// capacity //////////
     }
 
 public:  ////////// modifiers //////////
-    void clear() {
+    void clear() noexcept {
         for (size_type i = 0; i < m_size; ++i)
             delete m_data[i];
         m_size = 0;
@@ -179,15 +180,15 @@ public:  ////////// modifiers //////////
         return insertImpl(pos, new Ctor(std::forward<U>(t)));
     }
 
-    iterator erase(iterator pos) {
+    iterator erase(iterator pos) noexcept(if_assert) {
         return erase(const_iterator(pos));
     }
 
-    iterator erase(const_iterator pos) {
+    iterator erase(const_iterator pos) noexcept(if_assert) {
         return erase(pos, pos + 1);
     }
 
-    iterator erase(const_iterator first, const_iterator last) {
+    iterator erase(const_iterator first, const_iterator last) noexcept(if_assert) {
         if (first == last) return m_data + detail::distance(m_data, last);
         assert(first != end());
         assert(m_size > 0);
@@ -231,7 +232,7 @@ public:  ////////// modifiers //////////
         return m_data[m_size++] = new Ctor(std::forward<Args>(args)...);
     }
 
-    void pop_back() {
+    void pop_back() noexcept {
         delete m_data[--m_size];
     }
 
@@ -242,7 +243,7 @@ public:  ////////// modifiers //////////
     }
 
 private:
-    void deleteData() {
+    void deleteData() noexcept(if_assert) {
         if (!m_data) {
             assert(!m_cap);
             assert(!m_size);
@@ -315,14 +316,14 @@ private:
     }
 
     [[nodiscard]]
-    static constexpr size_type calcCapacity(size_type old, size_type new_) {
+    static constexpr size_type calcCapacity(size_type old, size_type new_) noexcept {
         if (old >= new_) return new_;
         old = old < 2 ? 2 : old;
         for (; old < new_; old = size_type(double(old) * multiplier)) { }
         return old;
     }
 
-#undef BASE
+#undef UT_DETAIL_BASE
 };
 
 template<typename T>
@@ -335,7 +336,7 @@ template<typename T>
 struct IsComparableContainerBase<PtrVecView<T>, OwnPtrVec<T>> : std::true_type { };
 
 template<typename T>
-void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) {
+void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) noexcept {
     a.swap(b);
 }
 
@@ -343,7 +344,7 @@ void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) {
 
 namespace std {
 template<typename T>
-void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) {
+void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) noexcept {
     a.swap(b);
 }
 }

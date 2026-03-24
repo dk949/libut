@@ -51,20 +51,20 @@ template<typename T>
 concept Pointer = std::is_pointer_v<T>;
 
 [[nodiscard]]
-static constexpr auto distance(auto a, auto b) {
+static constexpr auto distance(auto a, auto b) noexcept {
     return std::distance(AddTransitiveConstT<decltype(a)>(a), AddTransitiveConstT<decltype(b)>(b));
 }
 
 template<typename A, typename B>
 struct PtrCmp {
-    constexpr bool operator()(A const *, B const *) const {
+    constexpr bool operator()(A const *, B const *) const noexcept {
         return false;
     }
 };
 
 template<typename T>
 struct PtrCmp<T, T> {
-    constexpr bool operator()(T const *a, T const *b) const {
+    constexpr bool operator()(T const *a, T const *b) const noexcept {
         return a == b;
     }
 };

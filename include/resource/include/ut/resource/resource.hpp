@@ -121,7 +121,7 @@ public:
     }
 
     Resource &operator=(Resource &&other) noexcept(
-        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_assignable_v<D>) {
+        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_assignable_v<D> && noexcept(release())) {
         if (this != &other) {
             release();
             std::swap(m_data, other.m_data);
@@ -130,7 +130,7 @@ public:
         return *this;
     }
 
-    ~Resource() noexcept(noexcept(release())) {
+    ~Resource() noexcept {
         release();
     }
 
@@ -168,8 +168,9 @@ public:
      *
      * NOTE: this is called automatically by the destructor
      */
-    void release() noexcept(noexcept(m_destructor(getNonNullValue<T>(m_data)))
-                            && std::is_nothrow_assignable_v<T, decltype(nullValueOf<T>())>) {
+    void release() noexcept(
+        std::is_nothrow_invocable_v<D, T> && std::is_nothrow_assignable_v<OptionalOf<T>, OptionalOf<T>>) {
+
         if (!isNull<T>(m_data)) {
             m_destructor(getNonNullValue<T>(m_data));
             m_data = nullValueOf<T>();
@@ -275,7 +276,8 @@ Resource(Dd &&destructor)
 
 template<typename T>
 auto malloced(T *t) {
-    return Resource(t, [](auto *ptr) noexcept { free(ptr); });
+    using Ptr = std::add_pointer_t<std::remove_cvref_t<T>>;
+    return Resource(static_cast<Ptr>(t), [](Ptr ptr) noexcept { free(ptr); });
 }
 
 }  // namespace ut

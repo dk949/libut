@@ -9,11 +9,11 @@
 
 #ifndef assert
 #    include <cassert>
+#else
+#    define UT_DETAIL_THROWING_ASSERT
 #endif
 #include <cstddef>
 #include <cstring>
-#include <memory>
-#include <stack>
 #include <utility>
 
 #define UT_CONTAINER_BASE_INJECT_DEPENDANT_NAMES(CName) \
@@ -32,7 +32,8 @@ public:                                                 \
     using CName::npos;                                  \
 private:                                                \
     using CName::m_data;                                \
-    using CName::m_size
+    using CName::m_size;                                \
+    using CName::if_assert
 
 namespace ut {
 
@@ -62,106 +63,110 @@ public:  ////////// types //////////
 protected:
     StorageType m_data;
     size_type m_size;
-
+#ifdef UT_DETAIL_THROWING_ASSERT
+    static constexpr auto if_assert = false;
+#else
+    static constexpr auto if_assert = true;
+#endif
 public:  ////////// element access //////////
 
-    reference operator[](size_type idx) {
+    reference operator[](size_type idx) noexcept(if_assert) {
         assert(m_size > idx);
         return m_data[idx];
     }
 
-    const_reference operator[](size_type idx) const {
+    const_reference operator[](size_type idx) const noexcept(if_assert) {
         assert(m_size > idx);
         return m_data[idx];
     }
 
-    reference front() {
+    reference front() noexcept(if_assert) {
         assert(m_size > 0);
         return m_data[0];
     }
 
-    const_reference front() const {
+    const_reference front() const noexcept(if_assert) {
         assert(m_size > 0);
         return m_data[0];
     }
 
-    reference back() {
+    reference back() noexcept(if_assert) {
         assert(m_size > 0);
         return m_data[m_size - 1];
     }
 
-    const_reference back() const {
+    const_reference back() const noexcept(if_assert) {
         assert(m_size > 0);
         return m_data[m_size - 1];
     }
 
-    StorageType data() {
+    StorageType data() noexcept {
         return m_data;
     }
 
-    detail::AddTransitiveConstT<StorageType> data() const {
+    detail::AddTransitiveConstT<StorageType> data() const noexcept {
         return m_data;
     }
 public:  ////////// iterators //////////
 
-    iterator begin() {
+    iterator begin() noexcept {
         return m_data;
     }
 
-    const_iterator begin() const {
+    const_iterator begin() const noexcept {
         return m_data;
     }
 
-    const_iterator cbegin() const {
+    const_iterator cbegin() const noexcept {
         return m_data;
     }
 
-    iterator end() {
+    iterator end() noexcept {
         return m_data + m_size;
     }
 
-    const_iterator end() const {
+    const_iterator end() const noexcept {
         return m_data + m_size;
     }
 
-    const_iterator cend() const {
+    const_iterator cend() const noexcept {
         return m_data + m_size;
     }
 
-    reverse_iterator rbegin() {
+    reverse_iterator rbegin() noexcept {
         return reverse_iterator {end()};
     }
 
-    const_reverse_iterator rbegin() const {
+    const_reverse_iterator rbegin() const noexcept {
         return const_reverse_iterator {end()};
     }
 
-    const_reverse_iterator crbegin() const {
+    const_reverse_iterator crbegin() const noexcept {
         return const_reverse_iterator {cend()};
     }
 
-    reverse_iterator rend() {
+    reverse_iterator rend() noexcept {
         return reverse_iterator {begin()};
     }
 
-    const_reverse_iterator rend() const {
+    const_reverse_iterator rend() const noexcept {
         return const_reverse_iterator {begin()};
     }
 
-    const_reverse_iterator crend() const {
+    const_reverse_iterator crend() const noexcept {
         return const_reverse_iterator {cbegin()};
     }
 
 public:  ////////// capacity //////////
-    bool empty() const {
+    bool empty() const noexcept {
         return m_size == 0;
     }
 
-    size_type size() const {
+    size_type size() const noexcept {
         return m_size;
     }
 
-    size_type max_size() const {
+    size_type max_size() const noexcept {
         // NOTE: may change later
         return ~(size_type(0));
     }
@@ -197,7 +202,8 @@ concept ComparableContainerBase = IsComparableContainerBaseV<A, B>;
 
 template<typename A, typename B>
 requires ComparableContainerBase<A, B>  //
-    bool operator==(A const &a, B const &b) {
+    bool operator==(A const &a, B const &b) noexcept(
+        noexcept(std::declval<typename A::value_type>() != std::declval<typename B::value_type>())) {
 
     using S = std::common_type_t<typename A::size_type, typename B::size_type>;
 
@@ -206,7 +212,6 @@ requires ComparableContainerBase<A, B>  //
     if (a.size() != b.size()) return false;
 
     for (S i = 0; i < a.size(); ++i) {
-        if (a.data()[i] == b.data()[i]) continue;
         if (*a.data()[i] != *b.data()[i]) return false;
     }
 
