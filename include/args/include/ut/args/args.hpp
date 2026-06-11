@@ -679,7 +679,8 @@ private:
                     case Pos:
                         if (!(arg_ref.m_short == 0 && arg_ref.m_long.empty())) return true;
                         if (found) {
-                            if (i == sizeof...(Ts) - 1) out = std::unexpected(ParseError::TooManyPos);
+                            if (i == sizeof...(Ts) - 1 && !IsSpec<Ts, std::optional>)
+                                out = std::unexpected(ParseError::TooManyPos);
                             return i != sizeof...(Ts) - 1;
                         }
                         out = arg_ref.parse(arg, rest);
@@ -699,7 +700,7 @@ public:
     explicit Parser(std::string_view name, std::string_view desc, Tts &&...args)
             : m_name(name)
             , m_desc(desc)
-            , m_args(std::pair {std::forward<Tts>(args), !args.m_required}...) { }
+            , m_args(std::pair {std::forward<Tts>(args), false}...) { }
 
     template<IsSpec<Arg>... Tts>
     explicit Parser(std::string_view name, Tts &&...args)
@@ -757,7 +758,7 @@ public:
             (void)(([&]() -> bool {
                 if (required_result != ParseResult::Ok) return false;
                 auto const &[arg_obj, found] = std::get<idx>(m_args);
-                if (!found) {
+                if (!found && arg_obj.m_required) {
                     if (!arg_obj.m_long.empty()) {
                         required_result = error(1, "Missing required argument '{}'", arg_obj.m_long);
                     } else if (arg_obj.m_short != 0) {

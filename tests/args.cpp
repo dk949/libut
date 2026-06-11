@@ -740,6 +740,85 @@ TEST_CASE("optional without default set when provided", "[ArgParser][optional]")
     CHECK(extra == std::optional<std::string> {"flags"});
 }
 
+TEST_CASE("optional and non-optional positional smoke test", "[ArgParser][optional]") {
+    std::string file;
+    std::optional<std::string> dir = std::string {"."};
+    Parser parser {
+        "name",
+        "desc",
+        Arg(positional, file).var("var").help("help"),
+        Arg(positional, dir).var("var").help("help"),
+    };
+    SECTION("missing optional") {
+        ArgvBuilder a {"prog", "file"};
+        CaptureStreams cap;
+        auto res = parser.parse(a.argc(), a.argv());
+        CHECK(res == ParseResult::Ok);
+        CHECK(file == "file");
+        CHECK(dir.has_value());
+        CHECK(*dir == ".");
+    }
+    SECTION("present optional") {
+        ArgvBuilder b {"prog", "file", "dir"};
+        CaptureStreams cap;
+        auto res = parser.parse(b.argc(), b.argv());
+        CHECK(res == ParseResult::Ok);
+        CHECK(file == "file");
+        CHECK(dir.has_value());
+        CHECK(*dir == "dir");
+    }
+}
+
+TEST_CASE("optional positional with default retains default when absent", "[ArgParser][optional]") {
+    std::optional<std::string> dir = std::string {"."};
+    Parser parser {
+        Arg(positional, dir),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(dir.has_value());
+    CHECK(*dir == ".");
+}
+
+TEST_CASE("optional positional with default overwritten when provided", "[ArgParser][optional]") {
+    std::optional<std::string> dir = std::string {"."};
+    Parser parser {
+        Arg(positional, dir),
+    };
+    ArgvBuilder a {"prog", "build/"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(dir.has_value());
+    CHECK(*dir == "build/");
+}
+
+TEST_CASE("optional positional without default stays nullopt when absent", "[ArgParser][optional]") {
+    std::optional<std::string> extra;
+    Parser parser {
+        Arg(positional, extra),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK_FALSE(extra.has_value());
+}
+
+TEST_CASE("optional positional without default set when provided", "[ArgParser][optional]") {
+    std::optional<std::string> extra;
+    Parser parser {
+        Arg(positional, extra),
+    };
+    ArgvBuilder a {"prog", "flags"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(extra == std::optional<std::string> {"flags"});
+}
+
 // ---------------------------------------------------------------------------
 // ParseResult contract
 // ---------------------------------------------------------------------------
