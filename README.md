@@ -42,9 +42,9 @@ target_link_libraries(MY_TARGET ut::target_name)
 * `ut::ptr_containers`: containers for storing owning pointers
 * `ut::check`: type which prints when it is constructed/copied/moved/destructed
 * `ut::pair`: a better `std::pair` implementation
-* `ut::switchboard`: composable and type-safe CLI parser
 * `ut::err`: convenient error type for use with std::expected
 * `ut::add_noexcept`: add the `noexcept` specifier to a function type
+* `ut::args`: CLI parser
 * `ut::change_observer`: wrapper class that invokes callbacks when it's held value changes
 * `ut::traced_error`: an exception type that automatically stores a C++23 standard stacktrace
 * `ut::sv_to_num`: convert `std::string_view` to a number
