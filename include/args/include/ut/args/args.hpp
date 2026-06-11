@@ -335,7 +335,11 @@ private:
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- all three params serve distinct output roles
     void appendUsage(std::string &positionals, std::string &short_args, std::string &short_chain) const {
         if (m_short == 0 && m_long.empty()) {
-            std::format_to(std::back_inserter(positionals), " {}", fg<Color::Green>(getVar()));
+            std::format_to(std::back_inserter(positionals),
+                " {}{}{}",
+                IsSpec<T, std::optional> ? "[" : "",
+                fg<Color::Green>(getVar()),
+                IsSpec<T, std::optional> ? "]" : "");
         } else if (m_short != 0) {
             if constexpr (!SameOrModifierOf<T, bool>) {
                 short_args.push_back(' ');
