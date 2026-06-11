@@ -96,7 +96,7 @@ TEMPLATE_TEST_CASE("Multi-threaded", "[mt_queue]", std::queue<int>, std::deque<i
     MtQueue<int, TestType> q;
 
     SECTION("pop, front") {
-        std::barrier b {2};
+        std::barrier<> b {2};
         auto producer = std::jthread([&q, &b]() {
             REQUIRE(q.empty());
             b.arrive_and_wait();
@@ -241,7 +241,7 @@ TEMPLATE_TEST_CASE("2 threaded get mutex", "[mt_queue]", std::queue<int>, std::d
 
     MtQueue<int, TestType> q;
 
-    std::barrier b {2};
+    std::barrier<> b {2};
     auto t1 = std::jthread([&q, &b]() {
         b.arrive_and_wait();
         auto &mu = q.unsafeGetMutex();
