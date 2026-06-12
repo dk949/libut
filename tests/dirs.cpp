@@ -162,11 +162,12 @@ TEST_CASE("dir functions fall back to AppData defaults under %USERPROFILE%", "[d
     CHECK(inFreshThread([] { return ut::dir::logs(); }) == home_path / "AppData" / "Local");
 }
 
-TEST_CASE("config falls back to C:/ when neither APPDATA nor USERPROFILE are set", "[dirs]") {
+TEST_CASE("config falls back to the current drive root when neither APPDATA nor USERPROFILE are set", "[dirs]") {
     EnvVar appdata("APPDATA", std::nullopt);
     EnvVar userprofile("USERPROFILE", std::nullopt);
 
-    CHECK(inFreshThread([] { return ut::dir::config(); }) == std::filesystem::path("C:/") / "AppData" / "Roaming");
+    auto const root = std::filesystem::current_path().root_path();
+    CHECK(inFreshThread([] { return ut::dir::config(); }) == root / "AppData" / "Roaming");
 }
 
 #endif  // _WIN32
