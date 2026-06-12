@@ -31,17 +31,29 @@ void unsetEnvVar(char const *name) {
 #endif
 }
 
+std::optional<std::string> getEnvVar(char const *name) {
+#if defined(_MSC_VER)
+#    pragma warning(push)
+#    pragma warning(disable : 4996)  // std::getenv is fine here, it's read once and copied immediately
+#endif
+    if (auto const *value = std::getenv(name)) return value;
+#if defined(_MSC_VER)
+#    pragma warning(pop)
+#endif
+    return std::nullopt;
+}
+
 // Temporarily sets (or clears) an environment variable, restoring its
 // previous value (or absence) on destruction.
 class EnvVar {
 public:
     EnvVar(std::string name, char const *value) : m_name(std::move(name)) {
-        if (auto const *old = std::getenv(m_name.c_str())) m_old = old;
+        m_old = getEnvVar(m_name.c_str());
         setEnvVar(m_name.c_str(), value);
     }
 
     EnvVar(std::string name, std::nullopt_t) : m_name(std::move(name)) {
-        if (auto const *old = std::getenv(m_name.c_str())) m_old = old;
+        m_old = getEnvVar(m_name.c_str());
         unsetEnvVar(m_name.c_str());
     }
 
