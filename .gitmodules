@@ -58,3 +58,6 @@
 [submodule "include/traced_error/include/ut/traced_error"]
 	path = include/traced_error/include/ut/traced_error
 	url = https://gist.github.com/dk949/392c55c65e3c4efb89c7b89bd4390ba4
+[submodule "include/dirs/include/ut/dirs"]
+	path = include/dirs/include/ut/dirs
+	url = https://gist.github.com/dk949/e8e6a601982fb55ea41d38451109bd02

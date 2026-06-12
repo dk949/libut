@@ -56,6 +56,7 @@ target_link_libraries(MY_TARGET ut::target_name)
 * `ut::constexpr_hash`: a hashing function usable in `constexpr` context
 * `ut::trim`: trim characters from start and end of a `std::string_view`
 * `ut::pack_loops`: loop over variadic template parameters (either values or types)
+* `ut::dirs`: get standard directories for data/cache/logs/etc. on different platforms
 * `ut::asis`: Provides a more convenient way to work with different kinds of dynamically polymorphic values.
 * `ut::spawn`: simple process spawning (currently Linux only)
 * `ut::static_string`: compile time known string usable as a template parameter

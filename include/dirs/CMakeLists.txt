@@ -1,0 +1,1 @@
+libut_define_target(dirs ${CMAKE_CURRENT_SOURCE_DIR}/include/ut/dirs/dirs.hpp)
