@@ -292,11 +292,28 @@ struct LongArg {
     }
 };
 
-struct AsFalse : Modifier<bool, AsFalse> {
+template<typename T>
+struct AsFalse;
+
+template<typename T>
+AsFalse(T) -> AsFalse<T>;
+
+template<>
+struct AsFalse<bool> : Modifier<bool, AsFalse<bool>> {
     using Modifier::Modifier;
 
     AsFalse &modify(bool new_val) {
         *m_data = !new_val;
+        return *this;
+    }
+};
+
+template<>
+struct AsFalse<std::optional<bool>> : Modifier<std::optional<bool>, AsFalse<std::optional<bool>>> {
+    using Modifier::Modifier;
+
+    AsFalse &modify(std::optional<bool> new_val) {
+        if (new_val) *m_data = !*new_val;
         return *this;
     }
 };
@@ -314,7 +331,8 @@ private:
     ArgParserT m_parser;
     [[no_unique_address]]
     VarT m_var;
-    bool m_required = !IsSpec<T, std::optional> && !IsSpec<T, std::vector> && !SameOrModifierOf<T, bool>;
+    bool m_required = !IsSpec<arg_parser_type_t<T>, std::optional> && !IsSpec<arg_parser_type_t<T>, std::vector>
+                   && !SameOrModifierOf<T, bool>;
     static constexpr auto parser_kind = ArgParserT::kind;
 
     template<IsSpec<Arg>... Ts>

@@ -1428,6 +1428,98 @@ TEST_CASE("AsFalse is optional: absent parser with no other args returns Ok", "[
     CHECK(res == ParseResult::Ok);
 }
 
+TEST_CASE("AsFalse<optional<bool>> absent leaves nullopt untouched", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag;
+    Parser parser {
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK_FALSE(flag.has_value());
+}
+
+TEST_CASE("AsFalse<optional<bool>> absent leaves existing value untouched", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag = true;
+    Parser parser {
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    REQUIRE(flag.has_value());
+    CHECK(*flag);
+}
+
+TEST_CASE("AsFalse<optional<bool>> presence sets value to false", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag;
+    Parser parser {
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog", "--no-flag"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    REQUIRE(flag.has_value());
+    CHECK_FALSE(*flag);
+}
+
+TEST_CASE("AsFalse<optional<bool>> presence overrides preset value", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag = true;
+    Parser parser {
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog", "--no-flag"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    REQUIRE(flag.has_value());
+    CHECK_FALSE(*flag);
+}
+
+TEST_CASE("AsFalse<optional<bool>> --no-flag overrides earlier --flag", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag;
+    Parser parser {
+        Arg("--flag", flag),
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog", "--flag", "--no-flag"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    REQUIRE(flag.has_value());
+    CHECK_FALSE(*flag);
+}
+
+TEST_CASE("AsFalse<optional<bool>> --flag overrides earlier --no-flag", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag;
+    Parser parser {
+        Arg("--flag", flag),
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog", "--no-flag", "--flag"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    REQUIRE(flag.has_value());
+    CHECK(*flag);
+}
+
+TEST_CASE("AsFalse<optional<bool>> neither flag leaves nullopt", "[ArgParser][modifier][asfalse][optional]") {
+    std::optional<bool> flag;
+    Parser parser {
+        Arg("--flag", flag),
+        Arg("--no-flag", AsFalse {flag}),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK_FALSE(flag.has_value());
+}
+
 // ---------------------------------------------------------------------------
 // Equals-form must not consume the following token
 // ---------------------------------------------------------------------------
