@@ -168,7 +168,7 @@ struct ArgParser<bool> {
 };
 
 template<typename T>
-requires(!SameOrModifierOf<T, bool>) struct ArgParser<std::optional<T>> {
+struct ArgParser<std::optional<T>> {
     static constexpr ParserKind kind = ArgParser<T>::kind;
     ArgParser<T> inner_parser;
 

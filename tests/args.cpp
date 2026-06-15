@@ -819,6 +819,56 @@ TEST_CASE("optional positional without default set when provided", "[ArgParser][
     CHECK(extra == std::optional<std::string> {"flags"});
 }
 
+TEST_CASE("optional bool with default retains default when absent", "[ArgParser][optional]") {
+    std::optional<bool> force = true;
+    Parser parser {
+        Arg('f', force),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(force.has_value());
+    CHECK(*force == true);
+}
+
+TEST_CASE("optional bool with default overwritten when provided", "[ArgParser][optional]") {
+    std::optional<bool> force = false;
+    Parser parser {
+        Arg('f', force),
+    };
+    ArgvBuilder a {"prog", "-f"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(force.has_value());
+    CHECK(*force == true);
+}
+
+TEST_CASE("optional bool without default stays nullopt when absent", "[ArgParser][optional]") {
+    std::optional<bool> extra;
+    Parser parser {
+        Arg('e', extra),
+    };
+    ArgvBuilder a {"prog"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK_FALSE(extra.has_value());
+}
+
+TEST_CASE("optional bool without default set when provided", "[ArgParser][optional]") {
+    std::optional<bool> extra;
+    Parser parser {
+        Arg('e', extra),
+    };
+    ArgvBuilder a {"prog", "-e"};
+    CaptureStreams cap;
+    auto res = parser.parse(a.argc(), a.argv());
+    CHECK(res == ParseResult::Ok);
+    CHECK(*extra == true);
+}
+
 // ---------------------------------------------------------------------------
 // ParseResult contract
 // ---------------------------------------------------------------------------
