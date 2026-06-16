@@ -668,15 +668,15 @@ TEST_CASE("OwnPtrVec iterator concepts", "[ownptrvec]") {
 TEST_CASE("OwnPtrVec ranges algorithms", "[ownptrvec]") {
     SECTION("ranges::sort with projection") {
         auto v = OwnPtrVec<int>::make(3, 1, 4, 1, 5, 9, 2, 6);
-        std::ranges::sort(v, {}, [](auto const &r) { return *r; });
-        REQUIRE(std::ranges::is_sorted(v, {}, [](auto const &r) { return *r; }));
+        std::ranges::sort(v, {}, [](auto const &r) noexcept { return *r; });
+        REQUIRE(std::ranges::is_sorted(v, {}, [](auto const &r) noexcept { return *r; }));
         REQUIRE(*v.front() == 1);
         REQUIRE(*v.back() == 9);
     }
 
     SECTION("ranges::for_each mutates in place") {
         auto v = OwnPtrVec<int>::make(1, 2, 3);
-        std::ranges::for_each(v, [](auto const &r) { *r *= 10; });
+        std::ranges::for_each(v, [](auto const &r) noexcept { *r *= 10; });
         REQUIRE(*v[0] == 10);
         REQUIRE(*v[1] == 20);
         REQUIRE(*v[2] == 30);
@@ -684,16 +684,16 @@ TEST_CASE("OwnPtrVec ranges algorithms", "[ownptrvec]") {
 
     SECTION("ranges::count_if / find_if with projection") {
         auto v = OwnPtrVec<int>::make(1, 2, 3, 4, 5, 6);
-        REQUIRE(std::ranges::count_if(v, [](int x) { return x % 2 == 0; }, [](auto const &r) { return *r; }) == 3);
+        REQUIRE(std::ranges::count_if(v, [](int x) noexcept { return x % 2 == 0; }, [](auto const &r) noexcept { return *r; }) == 3);
 
-        auto it = std::ranges::find_if(v, [](auto const &r) { return *r == 4; });
+        auto it = std::ranges::find_if(v, [](auto const &r) noexcept { return *r == 4; });
         REQUIRE(it != v.end());
         REQUIRE(**it == 4);
     }
 
     SECTION("ranges::max_element with projection") {
         auto v = OwnPtrVec<int>::make(3, 9, 2, 7);
-        REQUIRE(**std::ranges::max_element(v, {}, [](auto const &r) { return *r; }) == 9);
+        REQUIRE(**std::ranges::max_element(v, {}, [](auto const &r) noexcept { return *r; }) == 9);
     }
 
     SECTION("ranges::transform in place") {
