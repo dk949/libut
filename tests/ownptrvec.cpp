@@ -477,8 +477,8 @@ TEST_CASE("OwnPtrVec overloaded constructors", "[ownptrvec]") {
             NoCpy(NoCpy const &) = delete;
             NoCpy &operator=(NoCpy const &) = delete;
             NoCpy(NoCpy &&) = default;
-            NoCpy &operator=(NoCpy &&) = default;
-            ~NoCpy() = default;
+            [[maybe_unused]] NoCpy &operator=(NoCpy &&) = default;
+            [[maybe_unused]] ~NoCpy() = default;
         };
 
         OwnPtrVec<NoCpy> v;
@@ -495,7 +495,7 @@ TEST_CASE("OwnPtrVec overloaded constructors", "[ownptrvec]") {
             NoMove &operator=(NoMove const &) = default;
             NoMove(NoMove &&) = delete;
             NoMove &operator=(NoMove &&) = delete;
-            ~NoMove() = default;
+            [[maybe_unused]] ~NoMove() = default;
         };
 
         OwnPtrVec<NoMove> v;
@@ -506,12 +506,12 @@ TEST_CASE("OwnPtrVec overloaded constructors", "[ownptrvec]") {
     }
     SECTION("No move no copy") {
         struct NoCpyNoMove {
-            NoCpyNoMove() = default;
+            [[maybe_unused]] NoCpyNoMove() = default;
             NoCpyNoMove(NoCpyNoMove const &) = delete;
             NoCpyNoMove &operator=(NoCpyNoMove const &) = delete;
             NoCpyNoMove(NoCpyNoMove &&) = delete;
             NoCpyNoMove &operator=(NoCpyNoMove &&) = delete;
-            ~NoCpyNoMove() = default;
+            [[maybe_unused]] ~NoCpyNoMove() = default;
         };
 
         OwnPtrVec<NoCpyNoMove> v;

@@ -14,10 +14,6 @@
 #    pragma warning(disable: 4996)
 #endif
 
-#ifdef assert
-#    undef assert
-#endif
-#define assert REQUIRE
 #include <ut/ptr_containers/valueptr.hpp>
 
 

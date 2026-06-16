@@ -237,7 +237,7 @@ TEST_CASE("resource move operator=", "[resource]") {
         ReleaseVal(ReleaseVal &&) = default;
         ReleaseVal &operator=(ReleaseVal const &) = delete;
         ReleaseVal &operator=(ReleaseVal &&) = default;
-        ~ReleaseVal() = default;
+        [[maybe_unused]] ~ReleaseVal() = default;
         int *released = nullptr;
 
         void operator()(int) {
