@@ -10,20 +10,199 @@
 #include "ptrvecview.hpp"
 #include "template_helpers.hpp"
 
+#include <compare>
 #include <cstring>
 #include <memory>
 #include <stack>
 #include <utility>
 
+namespace ut::detail {
+
+/** Proxy reference for a mutable `OwnPtrVec` iterator. Wraps the slot (`T **`) rather
+ *  than the owning pointer, so reads can't overwrite it; ownership only leaves via an
+ *  rvalue (`iter_move`).
+ */
+template<typename T>
+class OwnPtrRef {
+public:
+    OwnPtrRef(T **slot) noexcept
+            : m_slot(slot) { }
+
+    OwnPtrRef(T *&slot) noexcept
+            : m_slot(&slot) { }
+
+    OwnPtrRef(OwnPtrRef const &) = default;
+
+    ////////// read access (non-owning) //////////
+    T *operator->() const noexcept {
+        return *m_slot;
+    }
+
+    T &operator*() const noexcept {
+        return **m_slot;
+    }
+
+    T *get() const noexcept {
+        return *m_slot;
+    }
+
+    explicit operator bool() const noexcept {
+        return *m_slot != nullptr;
+    }
+
+    ////////// ownership assignment (through the reference) //////////
+    template<DerivedOrEqualTo<T> U>
+    OwnPtrRef const &operator=(std::unique_ptr<U> p) const noexcept {
+        delete *m_slot;
+        *m_slot = p.release();
+        return *this;
+    }
+
+    // Transfers ownership between slots (nulls the source), as std::sort needs.
+    OwnPtrRef const &operator=(OwnPtrRef const &o) const noexcept {
+        if (m_slot != o.m_slot) {
+            delete *m_slot;
+            *m_slot = std::exchange(*o.m_slot, nullptr);
+        }
+        return *this;
+    }
+
+    // rvalue-only so ownership can't leak out of a plain read.
+    operator std::unique_ptr<T>() && noexcept {
+        return std::unique_ptr<T>(std::exchange(*m_slot, nullptr));
+    }
+
+    friend void swap(OwnPtrRef a, OwnPtrRef b) noexcept {
+        std::swap(*a.m_slot, *b.m_slot);
+    }
+
+    friend bool operator==(OwnPtrRef a, OwnPtrRef b) noexcept {
+        return a.get() == b.get();
+    }
+
+    friend bool operator==(OwnPtrRef a, T const *b) noexcept {
+        return a.get() == b;
+    }
+
+private:
+    T **m_slot;
+};
+
+/** Random-access proxy iterator over `OwnPtrVec`'s `T **` storage; dereferences to
+ *  `OwnPtrRef<T>`, with `value_type` the owning `std::unique_ptr<T>`.
+ */
+template<typename T>
+class OwnPtrIterator {
+public:
+    using iterator_category = std::random_access_iterator_tag;
+    using iterator_concept = std::random_access_iterator_tag;
+    using value_type = std::unique_ptr<T>;
+    using difference_type = std::ptrdiff_t;
+    using reference = OwnPtrRef<T>;
+    using pointer = void;
+
+    OwnPtrIterator() noexcept
+            : m_p(nullptr) { }
+
+    OwnPtrIterator(T **p) noexcept
+            : m_p(p) { }
+
+    reference operator*() const noexcept {
+        return reference(m_p);
+    }
+
+    reference operator[](difference_type n) const noexcept {
+        return reference(m_p + n);
+    }
+
+    OwnPtrIterator &operator++() noexcept {
+        ++m_p;
+        return *this;
+    }
+
+    OwnPtrIterator operator++(int) noexcept {
+        auto tmp = *this;
+        ++m_p;
+        return tmp;
+    }
+
+    OwnPtrIterator &operator--() noexcept {
+        --m_p;
+        return *this;
+    }
+
+    OwnPtrIterator operator--(int) noexcept {
+        auto tmp = *this;
+        --m_p;
+        return tmp;
+    }
+
+    OwnPtrIterator &operator+=(difference_type n) noexcept {
+        m_p += n;
+        return *this;
+    }
+
+    OwnPtrIterator &operator-=(difference_type n) noexcept {
+        m_p -= n;
+        return *this;
+    }
+
+    friend OwnPtrIterator operator+(OwnPtrIterator it, difference_type n) noexcept {
+        return it += n;
+    }
+
+    friend OwnPtrIterator operator+(difference_type n, OwnPtrIterator it) noexcept {
+        return it += n;
+    }
+
+    friend OwnPtrIterator operator-(OwnPtrIterator it, difference_type n) noexcept {
+        return it -= n;
+    }
+
+    friend difference_type operator-(OwnPtrIterator a, OwnPtrIterator b) noexcept {
+        return a.m_p - b.m_p;
+    }
+
+    friend bool operator==(OwnPtrIterator a, OwnPtrIterator b) noexcept {
+        return a.m_p == b.m_p;
+    }
+
+    friend std::strong_ordering operator<=>(OwnPtrIterator a, OwnPtrIterator b) noexcept {
+        return a.m_p <=> b.m_p;
+    }
+
+    T **raw() const noexcept {
+        return m_p;
+    }
+
+    // Lets a mutable iterator be passed where a const_iterator position is expected.
+    operator T *const *() const noexcept {
+        return m_p;
+    }
+
+    friend value_type iter_move(OwnPtrIterator it) noexcept {
+        return value_type(std::exchange(*it.m_p, nullptr));
+    }
+
+    friend void iter_swap(OwnPtrIterator a, OwnPtrIterator b) noexcept {
+        std::swap(*a.m_p, *b.m_p);
+    }
+
+private:
+    T **m_p;
+};
+
+}  // namespace ut::detail
+
 namespace ut {
 
-#define UT_DETAIL_BASE                   \
-    ContainerBase<T,                     \
-        /*ValueType      = */ T,         \
-        /*StorageType    = */ T **,      \
-        /*Reference      = */ T *,       \
-        /*ConstReference = */ T const *, \
-        /*Iterator       = */ T **,      \
+#define UT_DETAIL_BASE                                   \
+    ContainerBase<T,                                     \
+        /*ValueType      = */ T,                         \
+        /*StorageType    = */ T **,                      \
+        /*Reference      = */ detail::OwnPtrRef<T>,      \
+        /*ConstReference = */ T const *,                 \
+        /*Iterator       = */ detail::OwnPtrIterator<T>, \
         /*ConstIterator  = */ T *const *>
 
 template<typename T>
@@ -90,11 +269,11 @@ public:  ////////// constructors //////////
      */
     PtrVecView<T> view(size_type from = 0, size_type to = npos) noexcept(
         if_assert
-        && std::is_nothrow_constructible_v<PtrVecView<T>, decltype(begin() + from), decltype((to == npos ? m_size : to) - from)>) {
+        && std::is_nothrow_constructible_v<PtrVecView<T>, decltype(m_data + from), decltype((to == npos ? m_size : to) - from)>) {
         assert(from <= to);
         assert(from <= m_size);
         assert((to == npos || to <= m_size));
-        return PtrVecView<T>(begin() + from, (to == npos ? m_size : to) - from);
+        return PtrVecView<T>(m_data + from, (to == npos ? m_size : to) - from);
     }
 
     /** Create a (non-owning) view of the vector.
@@ -181,7 +360,7 @@ public:  ////////// modifiers //////////
     }
 
     iterator erase(iterator pos) noexcept(if_assert) {
-        return erase(const_iterator(pos));
+        return erase(const_iterator(pos.raw()));
     }
 
     iterator erase(const_iterator pos) noexcept(if_assert) {
@@ -190,7 +369,7 @@ public:  ////////// modifiers //////////
 
     iterator erase(const_iterator first, const_iterator last) noexcept(if_assert) {
         if (first == last) return m_data + detail::distance(m_data, last);
-        assert(first != end());
+        assert(first != m_data + m_size);
         assert(m_size > 0);
         auto const range_size = detail::distance(first, last);
         assert(range_size > 0);
@@ -299,16 +478,18 @@ private:
     }
 
     template<detail::UniquePtr First, typename... Args>
-    void makeImpl(First &&first, Args &&...args)  //
-        requires detail::DerivedOrEqualTo<typename First::element_type, T> {
+    void makeImpl(First &&first, Args &&...args)
+    requires detail::DerivedOrEqualTo<typename First::element_type, T>
+    {
 
         m_data[m_size++] = first.release();
         if constexpr (sizeof...(Args)) makeImpl(std::forward<Args>(args)...);
     }
 
     template<detail::NotUniquePtr First, typename... Args>
-    void makeImpl(First &&first, Args &&...args)  //
-        requires detail::DerivedOrEqualTo<First, T> {
+    void makeImpl(First &&first, Args &&...args)
+    requires detail::DerivedOrEqualTo<First, T>
+    {
 
         using Ctor = std::remove_cvref_t<First>;
         m_data[m_size++] = new Ctor(std::forward<First>(first));
@@ -347,6 +528,18 @@ template<typename T>
 void swap(ut::OwnPtrVec<T> &a, ut::OwnPtrVec<T> &b) noexcept {
     a.swap(b);
 }
+
+// Common reference between the proxy and its value_type, so OwnPtrIterator models the
+// std::ranges iterator concepts (indirectly_readable, sortable, ...).
+template<typename T, template<class> class TQual, template<class> class UQual>
+struct basic_common_reference<ut::detail::OwnPtrRef<T>, std::unique_ptr<T>, TQual, UQual> {
+    using type = std::unique_ptr<T> const &;
+};
+
+template<typename T, template<class> class TQual, template<class> class UQual>
+struct basic_common_reference<std::unique_ptr<T>, ut::detail::OwnPtrRef<T>, TQual, UQual> {
+    using type = std::unique_ptr<T> const &;
+};
 }
 
 #endif  // OWNPTRVEC_HPP

@@ -1,8 +1,11 @@
 #include <catch.hpp>
 
+#include <algorithm>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <ranges>
 
 #ifdef assert
 #    undef assert
@@ -197,7 +200,7 @@ TEST_CASE("OwnPtrVec iterators", "[ownptrvec]") {
     }
     SECTION("range based for loop") {
         int i = 1;
-        for (int *elem : v)
+        for (auto elem : v)
             REQUIRE(*elem == i++);
         REQUIRE(std::size_t(i) == v.size() + 1);
 
@@ -450,7 +453,7 @@ TEST_CASE("OwnPtrVec stdlib integration", "[ownptrvec]") {
         ac.push_back(10);
         ac.push_back(10);
         ac.push_back(10);
-        auto res = std::accumulate(std::begin(ac), std::end(ac), 0, [](int acc, int *val) { return acc + *val; });
+        auto res = std::accumulate(std::begin(ac), std::end(ac), 0, [](int acc, auto val) { return acc + *val; });
         REQUIRE(res == 40);
     }
 
@@ -559,6 +562,183 @@ TEST_CASE("OwnPtrVec inheritance", "[ownptrvec]") {
         REQUIRE(v[0]->isBase() == true);
         REQUIRE(v[1]->isBase() == false);
         REQUIRE(v[2]->isBase() == false);
+    }
+}
+
+TEST_CASE("OwnPtrVec proxy reference", "[ownptrvec]") {
+    struct Tracker {
+        int *destroyed;
+        int val;
+
+        Tracker(int *d, int v)
+                : destroyed(d)
+                , val(v) { }
+
+        ~Tracker() {
+            ++*destroyed;
+        }
+    };
+
+    SECTION("assign from unique_ptr deletes the old element") {
+        int destroyed = 0;
+        auto v = OwnPtrVec<Tracker>::make(Tracker {&destroyed, 1});
+        REQUIRE(v[0]->val == 1);
+        destroyed = 0;  // discount the temporaries make() copied from
+
+        *v.begin() = std::make_unique<Tracker>(&destroyed, 2);
+        REQUIRE(destroyed == 1);
+        REQUIRE(v[0]->val == 2);
+        REQUIRE(v.size() == 1);
+    }
+
+    SECTION("proxy assignment transfers ownership between slots") {
+        int destroyed = 0;
+        auto v = OwnPtrVec<Tracker>::make(Tracker {&destroyed, 1}, Tracker {&destroyed, 2});
+        destroyed = 0;  // discount the temporaries make() copied from
+
+        *v.begin() = *(v.begin() + 1);
+        REQUIRE(destroyed == 1);
+        REQUIRE(v[0]->val == 2);
+        REQUIRE(!v[1]);
+    }
+
+    SECTION("swap exchanges the two slots") {
+        auto v = OwnPtrVec<int>::make(1, 2);
+        swap(*v.begin(), *(v.begin() + 1));
+        REQUIRE(*v[0] == 2);
+        REQUIRE(*v[1] == 1);
+    }
+
+    SECTION("proxy compares by pointer identity") {
+        auto v = OwnPtrVec<int>::make(1, 2);
+        REQUIRE(*v.begin() == v.front());
+        REQUIRE(v.front() == v[0]);
+        REQUIRE_FALSE(v[0] == v[1]);
+    }
+}
+
+TEST_CASE("OwnPtrVec iterator algorithms", "[ownptrvec]") {
+    SECTION("std::sort") {
+        auto v = OwnPtrVec<int>::make(3, 1, 4, 1, 5, 9, 2, 6);
+        std::sort(v.begin(), v.end(), [](auto const &a, auto const &b) { return *a < *b; });
+
+        int prev = std::numeric_limits<int>::min();
+        for (auto e : v) {
+            REQUIRE(*e >= prev);
+            prev = *e;
+        }
+        REQUIRE(v.size() == 8);
+    }
+
+    SECTION("std::transform with make_move_iterator (issue #1 example)") {
+        auto v = OwnPtrVec<int>::make(1, 2, 3);
+        std::transform(
+            std::make_move_iterator(v.begin()),
+            std::make_move_iterator(v.end()),
+            v.begin(),
+            [](auto node) -> std::unique_ptr<int> {
+                if (*node % 2 == 0) return node;
+                return std::make_unique<int>(*node * 10);
+            });
+        REQUIRE(*v[0] == 10);
+        REQUIRE(*v[1] == 2);
+        REQUIRE(*v[2] == 30);
+    }
+
+    SECTION("iter_move extracts ownership and empties the slot") {
+        auto v = OwnPtrVec<int>::make(7);
+        std::unique_ptr<int> owned = std::ranges::iter_move(v.begin());
+        REQUIRE(owned);
+        REQUIRE(*owned == 7);
+        REQUIRE(!*v.begin());
+    }
+}
+
+TEST_CASE("OwnPtrVec iterator concepts", "[ownptrvec]") {
+    using It = OwnPtrVec<int>::iterator;
+
+    STATIC_REQUIRE(std::same_as<std::iter_value_t<It>, std::unique_ptr<int>>);
+    STATIC_REQUIRE(std::same_as<std::iter_reference_t<It>, detail::OwnPtrRef<int>>);
+
+    STATIC_REQUIRE(std::random_access_iterator<It>);
+    STATIC_REQUIRE(std::sortable<It, decltype([](auto const &a, auto const &b) { return *a < *b; })>);
+    STATIC_REQUIRE(std::ranges::random_access_range<OwnPtrVec<int>>);
+}
+
+TEST_CASE("OwnPtrVec ranges algorithms", "[ownptrvec]") {
+    SECTION("ranges::sort with projection") {
+        auto v = OwnPtrVec<int>::make(3, 1, 4, 1, 5, 9, 2, 6);
+        std::ranges::sort(v, {}, [](auto const &r) { return *r; });
+        REQUIRE(std::ranges::is_sorted(v, {}, [](auto const &r) { return *r; }));
+        REQUIRE(*v.front() == 1);
+        REQUIRE(*v.back() == 9);
+    }
+
+    SECTION("ranges::for_each mutates in place") {
+        auto v = OwnPtrVec<int>::make(1, 2, 3);
+        std::ranges::for_each(v, [](auto const &r) { *r *= 10; });
+        REQUIRE(*v[0] == 10);
+        REQUIRE(*v[1] == 20);
+        REQUIRE(*v[2] == 30);
+    }
+
+    SECTION("ranges::count_if / find_if with projection") {
+        auto v = OwnPtrVec<int>::make(1, 2, 3, 4, 5, 6);
+        REQUIRE(std::ranges::count_if(v, [](int x) { return x % 2 == 0; }, [](auto const &r) { return *r; }) == 3);
+
+        auto it = std::ranges::find_if(v, [](auto const &r) { return *r == 4; });
+        REQUIRE(it != v.end());
+        REQUIRE(**it == 4);
+    }
+
+    SECTION("ranges::max_element with projection") {
+        auto v = OwnPtrVec<int>::make(3, 9, 2, 7);
+        REQUIRE(**std::ranges::max_element(v, {}, [](auto const &r) { return *r; }) == 9);
+    }
+
+    SECTION("ranges::transform in place") {
+        auto v = OwnPtrVec<int>::make(1, 2, 3);
+        std::ranges::transform(v, v.begin(), [](auto const &r) { return std::make_unique<int>(*r + 100); });
+        REQUIRE(*v[0] == 101);
+        REQUIRE(*v[1] == 102);
+        REQUIRE(*v[2] == 103);
+    }
+}
+
+TEST_CASE("OwnPtrVec proxy polymorphism", "[ownptrvec]") {
+    struct Base {
+        virtual int id() const {
+            return 0;
+        }
+
+        virtual ~Base() = default;
+    };
+
+    struct Derived : Base {
+        int id() const override {
+            return 1;
+        }
+    };
+
+    SECTION("assign a derived object through the proxy (no slicing)") {
+        auto v = OwnPtrVec<Base>::make(Base {}, Base {});
+        *v.begin() = std::make_unique<Derived>();
+        REQUIRE((*v.begin())->id() == 1);
+        REQUIRE(v[1]->id() == 0);
+    }
+
+    SECTION("iter_move yields a unique_ptr<Base> that still dispatches to Derived") {
+        auto v = OwnPtrVec<Base>::make(Base {});
+        *v.begin() = std::make_unique<Derived>();
+        std::unique_ptr<Base> b = std::ranges::iter_move(v.begin());
+        REQUIRE(b->id() == 1);
+    }
+
+    SECTION("sort polymorphic elements") {
+        auto v = OwnPtrVec<Base>::make(Derived {}, Base {});  // ids: 1, 0
+        std::sort(v.begin(), v.end(), [](auto const &a, auto const &b) { return a->id() < b->id(); });
+        REQUIRE(v[0]->id() == 0);
+        REQUIRE(v[1]->id() == 1);
     }
 }
 
