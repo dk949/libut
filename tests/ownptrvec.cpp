@@ -564,8 +564,12 @@ TEST_CASE("OwnPtrVec inheritance", "[ownptrvec]") {
 
 TEST_CASE("OwnPtrVec incomplete type", "[ownptrvec]") {
     SECTION("definition available in same translation unit") {
+        // Forward-declared here so the new-expression below references an
+        // existing name; MSVC rejects introducing a type inside new (C2462).
+        struct S;
+
         // Allocating on the heap to control lifetime
-        auto *v = new OwnPtrVec<struct S>();
+        auto *v = new OwnPtrVec<S>();
 
 
         bool deleted = false;
