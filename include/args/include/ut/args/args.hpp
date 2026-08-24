@@ -108,18 +108,22 @@ struct ArgParser {
 template<typename T>
 concept HasParserMulti = ArgParser<T>::kind != ParserKind::SingleArg
                       && requires(ArgParser<T> parser, std::string_view arg, std::span<char *> next_args, T *current) {
-    {parser.parse(arg, next_args, current)}->std::same_as<std::expected<std::pair<int, T>, ParseError>>;
-};
+                             {
+                                 parser.parse(arg, next_args, current)
+                             } -> std::same_as<std::expected<std::pair<int, T>, ParseError>>;
+                         };
 
 template<typename T>
 concept HasParserEql = ArgParser<T>::kind != ParserKind::NoEql
                     && requires(ArgParser<T> parser, std::string_view arg, std::string_view value, T *current) {
-    {parser.parse(arg, value, current)}->std::same_as<std::expected<std::pair<bool, T>, ParseError>>;
-};
+                           {
+                               parser.parse(arg, value, current)
+                           } -> std::same_as<std::expected<std::pair<bool, T>, ParseError>>;
+                       };
 
 template<typename T>
 concept HasParserHelp = requires(ArgParser<T> const parser) {
-    {parser.helpEnd()}->std::same_as<std::string>;
+    { parser.helpEnd() } -> std::same_as<std::string>;
 };
 
 template<typename T>
@@ -146,7 +150,8 @@ struct ArgParser<std::string> {
 };
 
 template<typename T>
-requires(std::integral<T> || std::floating_point<T>) struct ArgParser<T> {
+requires(std::integral<T> || std::floating_point<T>)
+struct ArgParser<T> {
     static constexpr ParserKind kind = ParserKind::SingleArg;
 
     static std::expected<std::pair<bool, T>, ParseError> parse(std::string_view, std::string_view value, T *) {
@@ -174,7 +179,9 @@ struct ArgParser<std::optional<T>> {
 
     std::expected<std::pair<int, std::optional<T>>, ParseError> parse(std::string_view arg,
         std::span<char *> next_args,
-        std::optional<T> *current) requires(HasParserMulti<T>) {
+        std::optional<T> *current)
+    requires(HasParserMulti<T>)
+    {
         T *inner_current = (current && current->has_value()) ? std::addressof(current->value()) : nullptr;
         // Propagate the inner parser's error verbatim: optionality means the flag
         // may be *absent* (Arg::m_required is cleared), not that a bad value is
@@ -189,7 +196,9 @@ struct ArgParser<std::optional<T>> {
 
     std::expected<std::pair<bool, std::optional<T>>, ParseError> parse(std::string_view arg,
         std::string_view value,
-        std::optional<T> *current) requires(HasParserEql<T>) {
+        std::optional<T> *current)
+    requires(HasParserEql<T>)
+    {
         T *inner_current = (current && current->has_value()) ? std::addressof(current->value()) : nullptr;
         // See the multi-arg overload above: propagate, do not swallow.
         return std::move(inner_parser.parse(arg, value, inner_current))
@@ -200,7 +209,9 @@ struct ArgParser<std::optional<T>> {
     }
 
     [[nodiscard]]
-    std::string helpEnd() const requires(HasParserHelp<T>) {
+    std::string helpEnd() const
+    requires(HasParserHelp<T>)
+    {
         return inner_parser.helpEnd();
     }
 };
@@ -210,13 +221,16 @@ struct ArgParser<std::optional<T>> {
 // optional/bool targets, a vector flag is always optional (an absent flag
 // yields an empty vector).  Inner errors propagate (no swallowing).
 template<typename T>
-requires(!SameOrModifierOf<T, bool> && !IsSpec<T, std::optional>) struct ArgParser<std::vector<T>> {
+requires(!SameOrModifierOf<T, bool> && !IsSpec<T, std::optional>)
+struct ArgParser<std::vector<T>> {
     static constexpr ParserKind kind = ArgParser<T>::kind;
     ArgParser<T> inner_parser;
 
     std::expected<std::pair<int, std::vector<T>>, ParseError> parse(std::string_view arg,
         std::span<char *> next_args,
-        std::vector<T> *current) requires(HasParserMulti<T>) {
+        std::vector<T> *current)
+    requires(HasParserMulti<T>)
+    {
         return std::move(inner_parser.parse(arg, next_args, nullptr))
             // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward) -- std::forward_like used instead
             .transform([&]<typename Tt>(Tt &&value) {
@@ -228,7 +242,9 @@ requires(!SameOrModifierOf<T, bool> && !IsSpec<T, std::optional>) struct ArgPars
 
     std::expected<std::pair<bool, std::vector<T>>, ParseError> parse(std::string_view arg,
         std::string_view value,
-        std::vector<T> *current) requires(HasParserEql<T>) {
+        std::vector<T> *current)
+    requires(HasParserEql<T>)
+    {
         return std::move(inner_parser.parse(arg, value, nullptr))
             // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward) -- std::forward_like used instead
             .transform([&]<typename Tt>(Tt &&result) {
@@ -239,7 +255,9 @@ requires(!SameOrModifierOf<T, bool> && !IsSpec<T, std::optional>) struct ArgPars
     }
 
     [[nodiscard]]
-    std::string helpEnd() const requires(HasParserHelp<T>) {
+    std::string helpEnd() const
+    requires(HasParserHelp<T>)
+    {
         return inner_parser.helpEnd();
     }
 };
@@ -437,41 +455,51 @@ private:
             : m_short(short_)
             , m_long(long_) { }
 
-    Arg(char short_, std::string_view long_, T *target, PrivateTag) requires(HasArgParser<T>)
+    Arg(char short_, std::string_view long_, T *target, PrivateTag)
+    requires(HasArgParser<T>)
             : m_short(short_)
             , m_long(long_)
             , m_target(target) {
         if constexpr (std::same_as<T, bool>) *m_target = false;
     }
 
-    Arg(char short_, std::string_view long_, T target, PrivateTag) requires(IsModifier<T>)
+    Arg(char short_, std::string_view long_, T target, PrivateTag)
+    requires(IsModifier<T>)
             : m_short(short_)
             , m_long(long_)
             , m_target(target) { }
 public:
 
-    Arg(ShortArg short_, LongArg long_, T &target) requires(HasArgParser<T>)
+    Arg(ShortArg short_, LongArg long_, T &target)
+    requires(HasArgParser<T>)
             : Arg(short_.ch, long_.sv, &target, PrivateTag {}) { }
 
-    Arg(LongArg long_, T &target) requires(HasArgParser<T>)
+    Arg(LongArg long_, T &target)
+    requires(HasArgParser<T>)
             : Arg(0, long_.sv, &target, PrivateTag {}) { }
 
-    Arg(ShortArg short_, T &target) requires(HasArgParser<T>)
+    Arg(ShortArg short_, T &target)
+    requires(HasArgParser<T>)
             : Arg(short_.ch, "", &target, PrivateTag {}) { }
 
-    Arg(Positional, T &target) requires(!SameOrModifierOf<T, bool> && HasArgParser<T>)
+    Arg(Positional, T &target)
+    requires(!SameOrModifierOf<T, bool> && HasArgParser<T>)
             : Arg(0, "", &target, PrivateTag {}) { }
 
-    Arg(ShortArg short_, LongArg long_, T target) requires(IsModifier<T>)
+    Arg(ShortArg short_, LongArg long_, T target)
+    requires(IsModifier<T>)
             : Arg(short_.ch, long_.sv, target, PrivateTag {}) { }
 
-    Arg(LongArg long_, T target) requires(IsModifier<T>)
+    Arg(LongArg long_, T target)
+    requires(IsModifier<T>)
             : Arg(0, long_.sv, target, PrivateTag {}) { }
 
-    Arg(ShortArg short_, T target) requires(IsModifier<T>)
+    Arg(ShortArg short_, T target)
+    requires(IsModifier<T>)
             : Arg(short_.ch, "", target, PrivateTag {}) { }
 
-    Arg(Positional, T target) requires(IsModifier<T>)
+    Arg(Positional, T target)
+    requires(IsModifier<T>)
             : Arg(0, "", target, PrivateTag {}) { }
 
     std::expected<int, ParseError> parse(std::string_view arg, std::span<char *> next_args) {
@@ -516,7 +544,9 @@ public:
         return std::move(*this);
     }
 
-    Arg &&var(std::string_view var_str) && requires(!SameOrModifierOf<T, bool>) {
+    Arg &&var(std::string_view var_str) &&
+    requires(!SameOrModifierOf<T, bool>)
+    {
         m_var = var_str;
         return std::move(*this);
     }
