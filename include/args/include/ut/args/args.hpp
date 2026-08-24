@@ -68,7 +68,7 @@ protected:
     T *m_data;
 public:
     // NOLINTNEXTLINE(bugprone-crtp-constructor-accessibility) -- this is used by derived class
-    explicit(false) Modifier(T &data)
+    explicit(false) Modifier(T &data)  // cppcheck-suppress noExplicitConstructor
             : m_data(&data) { }
 
     T *asTarget() {
@@ -282,16 +282,16 @@ static constexpr struct Positional {
 } positional;
 
 struct FmtIndent {
-    std::size_t init;
-    std::size_t help;
-    std::size_t line_len;
+    std::size_t init {};
+    std::size_t help {};
+    std::size_t line_len {};
     static constexpr auto min_help_len = 35;
 };
 
 struct ShortArg {
     char ch;
 
-    consteval explicit(false) ShortArg(char c)
+    consteval explicit(false) ShortArg(char c)  // cppcheck-suppress noExplicitConstructor
             : ch(c) {
         if (c == 'v' || c == 'h') detail::consteval_error("Use of reserved flag");
     }
@@ -300,10 +300,10 @@ struct ShortArg {
 struct LongArg {
     std::string_view sv;
 
-    consteval explicit(false) LongArg(char const *s)
+    consteval explicit(false) LongArg(char const *s)  // cppcheck-suppress noExplicitConstructor
             : LongArg(std::string_view {s}) { }
 
-    consteval explicit(false) LongArg(std::string_view s)
+    consteval explicit(false) LongArg(std::string_view s)  // cppcheck-suppress noExplicitConstructor
             : sv(s) {
         if (s == "--version" || s == "--help" || s == "--") detail::consteval_error("Use of reserved flag");
         if (!s.starts_with("--")) detail::consteval_error("Long arguments have to start with --");
@@ -470,11 +470,11 @@ private:
             , m_target(target) { }
 public:
 
-    Arg(ShortArg short_, LongArg long_, T &target)
+    Arg(ShortArg short_, LongArg long_, T &target)  // cppcheck-suppress passedByValue
     requires(HasArgParser<T>)
             : Arg(short_.ch, long_.sv, &target, PrivateTag {}) { }
 
-    Arg(LongArg long_, T &target)
+    Arg(LongArg long_, T &target)  // cppcheck-suppress passedByValue
     requires(HasArgParser<T>)
             : Arg(0, long_.sv, &target, PrivateTag {}) { }
 
@@ -486,11 +486,11 @@ public:
     requires(!SameOrModifierOf<T, bool> && HasArgParser<T>)
             : Arg(0, "", &target, PrivateTag {}) { }
 
-    Arg(ShortArg short_, LongArg long_, T target)
+    Arg(ShortArg short_, LongArg long_, T target)  // cppcheck-suppress passedByValue
     requires(IsModifier<T>)
             : Arg(short_.ch, long_.sv, target, PrivateTag {}) { }
 
-    Arg(LongArg long_, T target)
+    Arg(LongArg long_, T target)  // cppcheck-suppress passedByValue
     requires(IsModifier<T>)
             : Arg(0, long_.sv, target, PrivateTag {}) { }
 
@@ -675,7 +675,7 @@ private:
     // Record the offending value (and accepted set, when the arg's parser
     // exposes helpEnd) for an InvalidValue diagnostic.
     template<typename A>
-    void captureInvalid(A &arg_ref, std::string_view val) {
+    void captureInvalid(A &arg_ref, std::string_view val) {  // cppcheck-suppress unusedPrivateFunction
         m_bad_value = std::string {val};
         if constexpr (requires { arg_ref.m_parser.helpEnd(); })
             m_bad_accepted = arg_ref.m_parser.helpEnd();
@@ -684,11 +684,11 @@ private:
     }
 
     // NOLINTNEXTLINE(readability-function-cognitive-complexity) -- TODO(dk949): split this
-    std::expected<int, ParseError> runParser(std::string_view arg, std::span<char *> rest) {
+    std::expected<int, ParseError> runParser(std::string_view arg_, std::span<char *> rest) {
         enum { Double, Eql, Single, Pos } kind {};
 
-        std::string_view value;
-
+        std::string_view value;  // cppcheck-suppress variableScope
+        std::string_view arg = arg_;
         if (arg.empty()) {
             kind = Pos;
         } else if (arg.size() == 1) {
@@ -756,8 +756,8 @@ public:
 
     // Version string reported by `-v`/`--version`.  Set after construction since
     // the constructors are template-deduced over the argument specs.
-    Parser &setVersion(std::string_view version) {
-        m_version = version;
+    Parser &setVersion(std::string_view ver) {
+        m_version = ver;
         return *this;
     }
 

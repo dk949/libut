@@ -2,10 +2,12 @@
 #include <ut/args/args.hpp>
 #include <ut/args/color.hpp>
 
+#include <algorithm>
 #include <cstdint>
 #include <expected>
 #include <format>
 #include <iostream>
+#include <iterator>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -21,12 +23,8 @@ public:
     explicit ArgvBuilder(std::initializer_list<std::string_view> args) {
         m_strings.reserve(args.size());
         m_ptrs.reserve(args.size() + 1);
-        for (auto s : args) {
-            m_strings.emplace_back(s);
-        }
-        for (auto &s : m_strings) {
-            m_ptrs.push_back(s.data());
-        }
+        std::transform(args.begin(), args.end(), std::back_inserter(m_strings), [](auto s) { return std::string {s}; });
+        std::transform(m_strings.begin(), m_strings.end(), std::back_inserter(m_ptrs), [](auto &s) { return s.data(); });
         m_ptrs.push_back(nullptr);
     }
 
@@ -330,7 +328,7 @@ struct std::formatter<ColorEnum> : std::formatter<std::string_view> {
 
 template<>
 struct ut::ArgParser<ColorEnum> {
-    static constexpr ParserKind kind = ParserKind::SingleArg;
+    static constexpr ParserKind kind = ParserKind::SingleArg;  // cppcheck-suppress unusedStructMember
 
     static std::expected<std::pair<bool, ColorEnum>, ParseError> parse(std::string_view,
         std::string_view value,
